@@ -1,4 +1,4 @@
-SDX-REST
-========
+sdx-rest-jackson
+================
 
-**Simple REST framework based on Jetty.**
+**Jackson support for sdx-rest.**
