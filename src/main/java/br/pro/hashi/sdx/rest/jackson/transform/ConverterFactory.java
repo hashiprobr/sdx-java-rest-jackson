@@ -26,58 +26,64 @@ public class ConverterFactory {
 	}
 
 	private JavaType constructType(ParameterizedType type) {
-		Stack<StackNode> stack = new Stack<>();
-		stack.push(new StackNode(type));
 		JavaType javaType = null;
+
+		Stack<Node> stack = new Stack<>();
+		stack.push(new Node(type));
+
 		while (!stack.isEmpty()) {
-			StackNode node = stack.peek();
+			Node node = stack.peek();
+
 			if (javaType != null) {
-				node.setJavaType(javaType);
+				node.setJavaParameter(javaType);
 				javaType = null;
 			}
+
 			if (node.hasNext()) {
-				Type nextType = node.getType();
-				if (nextType instanceof ParameterizedType) {
-					stack.push(new StackNode((ParameterizedType) nextType));
+				Type parameter = node.getParameter();
+				if (parameter instanceof ParameterizedType) {
+					stack.push(new Node((ParameterizedType) parameter));
 				} else {
-					node.setJavaType(factory.constructType(nextType));
+					node.setJavaParameter(factory.constructType(parameter));
 				}
 			} else {
 				javaType = node.construct();
 				stack.pop();
 			}
 		}
+
 		return javaType;
 	}
 
-	private class StackNode {
-		private final Class<?> rawType;
-		private final Type[] types;
-		private final JavaType[] javaTypes;
+	private class Node {
+		private final Type type;
+		private final Type[] parameters;
+		private final JavaType[] javaParameters;
 		private int index;
 
-		private StackNode(ParameterizedType type) {
-			this.rawType = (Class<?>) type.getRawType();
-			this.types = type.getActualTypeArguments();
-			this.javaTypes = new JavaType[this.types.length];
+		private Node(ParameterizedType type) {
+			Type[] parameters = type.getActualTypeArguments();
+			this.type = type.getRawType();
+			this.parameters = parameters;
+			this.javaParameters = new JavaType[parameters.length];
 			this.index = 0;
 		}
 
 		private boolean hasNext() {
-			return index < types.length;
+			return index < parameters.length;
 		}
 
-		private Type getType() {
-			return types[index];
+		private Type getParameter() {
+			return parameters[index];
 		}
 
-		private void setJavaType(JavaType type) {
-			javaTypes[index] = type;
+		private void setJavaParameter(JavaType type) {
+			javaParameters[index] = type;
 			index++;
 		}
 
 		private JavaType construct() {
-			return factory.constructParametricType(rawType, javaTypes);
+			return factory.constructParametricType((Class<?>) type, javaParameters);
 		}
 	}
 }
