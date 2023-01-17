@@ -125,6 +125,18 @@ class JacksonSerializerTest {
 	}
 
 	@Test
+	void throwsIOExceptionIfMapperThrowsIOException() throws IOException {
+		Object body = new Object();
+		Throwable cause = new IOException();
+		doThrow(cause).when(mapper).writeValue(any(Writer.class), eq(body), eq(Object.class));
+		mockPlumber();
+		Exception exception = assertThrows(Plumber.Exception.class, () -> {
+			s.toReader(body);
+		});
+		assertSame(cause, exception.getCause());
+	}
+
+	@Test
 	void throwsUncheckedIOExceptionIfPlumberThrowsIOException() throws IOException {
 		Object body = mockMapper();
 		Throwable cause = new IOException();
