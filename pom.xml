@@ -2,9 +2,9 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.hashiprobr</groupId>
   <artifactId>sdx-rest-jackson</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.5-SNAPSHOT</version>
   <name>${project.groupId}:${project.artifactId}</name>
-  <description>Jackson support for sdx-rest.</description>
+  <description>Jackson extension for sdx-rest.</description>
   <url>https://github.com/hashiprobr/sdx-java-rest-jackson</url>
   <licenses>
     <license>
@@ -38,7 +38,7 @@
     <dependency>
       <groupId>io.github.hashiprobr</groupId>
       <artifactId>sdx-rest</artifactId>
-      <version>0.0.3-SNAPSHOT</version>
+      <version>0.0.5-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -47,14 +47,14 @@
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
-      <artifactId>junit-jupiter-api</artifactId>
+      <artifactId>junit-jupiter-params</artifactId>
       <version>5.9.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-inline</artifactId>
-      <version>4.10.0</version>
+      <version>4.11.0</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
