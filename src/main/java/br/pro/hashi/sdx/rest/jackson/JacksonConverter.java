@@ -41,7 +41,7 @@ public interface JacksonConverter<S, T> extends Converter<S, T> {
 		return new JsonSerializer<>() {
 			@Override
 			public void serialize(S value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-				gen.writeObject(to(value));
+				serializers.findValueSerializer(targetType).serialize(to(value), gen, serializers);
 			}
 		};
 	};
