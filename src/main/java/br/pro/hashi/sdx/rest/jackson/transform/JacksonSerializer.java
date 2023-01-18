@@ -39,6 +39,7 @@ public class JacksonSerializer implements Serializer {
 		Consumer<Writer> consumer = (writer) -> {
 			try {
 				mapper.writeValue(writer, body, type);
+				writer.close();
 			} catch (IOException exception) {
 				throw new Plumber.Exception(exception);
 			}
