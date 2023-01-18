@@ -23,6 +23,7 @@ import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.client.RestClientBuilder;
 import br.pro.hashi.sdx.rest.jackson.mock.Address;
 import br.pro.hashi.sdx.rest.jackson.mock.Email;
+import br.pro.hashi.sdx.rest.jackson.mock.Sheet;
 import br.pro.hashi.sdx.rest.jackson.mock.User;
 import br.pro.hashi.sdx.rest.jackson.mock.Wrapper;
 import br.pro.hashi.sdx.rest.server.RestServerBuilder;
@@ -146,6 +147,99 @@ class JacksonIntegrationTest {
 		assertEquals("deserializing", email.getLogin());
 		assertEquals("email.com", email.getDomain());
 		assertFalse(user.isActive());
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	<T extends Builder<T>> void serializesSheetWithConverters(Class<T> type) throws IOException {
+		setUp(type);
+		injectWithConverters();
+		assertReadsSheet("""
+				[ [ "City 0", "0", "Street 0" ], [ "City 1", "1", "Street 1" ] ]
+				""");
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	<T extends Builder<T>> void serializesSheetWithoutConverters(Class<T> type) throws IOException {
+		setUp(type);
+		injectWithoutConverters();
+		assertReadsSheet("""
+				{
+				  "rows" : [ [ "Street 0", "0", "City 0" ], [ "Street 1", "1", "City 1" ] ]
+				}
+				""");
+	}
+
+	private void assertReadsSheet(String content) throws IOException {
+		Sheet sheet = new Sheet();
+		sheet.addRow("Street 0", 0, "City 0");
+		sheet.addRow("Street 1", 1, "City 1");
+		assertReads(content, sheet, Sheet.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	<T extends Builder<T>> void deserializesSheetWithConverters(Class<T> type) {
+		setUp(type);
+		injectWithConverters();
+		assertWritesSheet("""
+				[
+				  [
+				    "City 1",
+				    "1",
+				    "Street 1"
+				  ],
+				  [
+				    "City 0",
+				    "0",
+				    "Street 0"
+				  ]
+				]
+				""");
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	<T extends Builder<T>> void deserializesSheetWithoutConverters(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		assertWritesSheet("""
+				{
+				  "rows": [
+				    [
+				      "Street 1",
+				      "1",
+				      "City 1"
+				    ],
+				    [
+				      "Street 0",
+				      "0",
+				      "City 0"
+				    ]
+				  ]
+				}
+				""");
+	}
+
+	private void assertWritesSheet(String content) {
+		Sheet sheet = fromString(content, Sheet.class);
+		List<String> row = sheet.getRow(0);
+		assertEquals("Street 1", row.get(0));
+		assertEquals("1", row.get(1));
+		assertEquals("City 1", row.get(2));
+		row = sheet.getRow(1);
+		assertEquals("Street 0", row.get(0));
+		assertEquals("0", row.get(1));
+		assertEquals("City 0", row.get(2));
 	}
 
 	@ParameterizedTest
@@ -333,11 +427,11 @@ class JacksonIntegrationTest {
 	private void assertReads(String content, Object object, Type type) throws IOException {
 		Reader reader = serializers.get("application/json").toReader(object, type);
 		content = content.strip();
+		int length;
 		char[] chars = new char[content.length()];
 		int offset = 0;
 		int remaining = chars.length;
-		while (remaining > 0) {
-			int length = reader.read(chars, offset, remaining);
+		while (remaining > 0 && (length = reader.read(chars, offset, remaining)) != -1) {
 			offset += length;
 			remaining -= length;
 		}
