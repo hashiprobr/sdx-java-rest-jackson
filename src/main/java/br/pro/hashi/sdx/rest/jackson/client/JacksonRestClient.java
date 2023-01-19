@@ -8,7 +8,7 @@ import br.pro.hashi.sdx.rest.client.RestClientBuilder;
  */
 public final class JacksonRestClient {
 	/**
-	 * Instantiates a REST client using a specified URL prefix.
+	 * Instantiates a default REST client using a specified URL prefix.
 	 * 
 	 * @param urlPrefix the URL prefix
 	 * @return the client
@@ -18,7 +18,7 @@ public final class JacksonRestClient {
 	}
 
 	/**
-	 * Convenience method for instantiating a REST client builder.
+	 * Convenience method that instantiates a REST client builder.
 	 * 
 	 * @return the client builder
 	 */

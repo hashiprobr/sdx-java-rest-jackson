@@ -8,7 +8,8 @@ import br.pro.hashi.sdx.rest.server.RestServerBuilder;
  */
 public final class JacksonRestServer {
 	/**
-	 * Instantiates a REST server using the resources of a specified package.
+	 * Instantiates a default REST server using the resources of a specified
+	 * package.
 	 * 
 	 * @param packageName the package name
 	 * @return the server
@@ -18,7 +19,7 @@ public final class JacksonRestServer {
 	}
 
 	/**
-	 * Convenience method for instantiating a REST server builder.
+	 * Convenience method that instantiates a REST server builder.
 	 * 
 	 * @return the server builder
 	 */
