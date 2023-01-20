@@ -18,7 +18,7 @@ public class JacksonDeserializer implements Deserializer {
 	}
 
 	@Override
-	public <T> T fromReader(Reader reader, Type type) {
+	public <T> T read(Reader reader, Type type) {
 		T body;
 		try {
 			body = mapper.readValue(reader, type);
@@ -26,6 +26,12 @@ public class JacksonDeserializer implements Deserializer {
 			throw new DeserializingException(exception);
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
+		} finally {
+			try {
+				reader.close();
+			} catch (IOException exception) {
+				throw new UncheckedIOException(exception);
+			}
 		}
 		return body;
 	}

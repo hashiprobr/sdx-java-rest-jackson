@@ -1,9 +1,12 @@
 package br.pro.hashi.sdx.rest.jackson.transform;
 
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -31,53 +34,64 @@ class JacksonDeserializerTest {
 	}
 
 	@Test
-	void returnsWhatMapperReturns() throws IOException {
+	void reads() throws IOException {
 		Reader reader = newReader();
-		Object body = mockReturn(reader);
-		assertSame(body, d.fromReader(reader, Object.class));
+		Object body = mockMapperReturn(reader);
+		assertSame(body, d.read(reader, Object.class));
 	}
 
 	@Test
-	void returnsWhatMapperReturnsWithHint() throws IOException {
+	void readsWithHint() throws IOException {
 		Reader reader = newReader();
-		Object body = mockReturn(reader);
-		assertSame(body, d.fromReader(reader, new Hint<Object>() {}.getType()));
+		Object body = mockMapperReturn(reader);
+		assertSame(body, d.read(reader, new Hint<Object>() {}.getType()));
 	}
 
 	@Test
-	void throwsDeserializingExceptionIfMapperThrowsDatabindException() throws IOException {
-		Reader reader = newReader();
-		Throwable cause = mock(DatabindException.class);
-		mockThrow(reader, cause);
-		Exception exception = assertThrows(DeserializingException.class, () -> {
-			d.fromReader(reader, Object.class);
-		});
-		assertSame(cause, exception.getCause());
-	}
-
-	@Test
-	void throwsDeserializingExceptionIfMapperThrowsIOException() throws IOException {
-		Reader reader = newReader();
-		Throwable cause = new IOException();
-		mockThrow(reader, cause);
+	void doesNotReadIfCloseThrows() throws IOException {
+		Reader reader = spy(newReader());
+		doThrow(IOException.class).when(reader).close();
+		mockMapperReturn(reader);
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			d.fromReader(reader, Object.class);
+			d.read(reader, Object.class);
 		});
-		assertSame(cause, exception.getCause());
+		assertInstanceOf(IOException.class, exception.getCause());
 	}
 
-	private Reader newReader() {
-		return new StringReader("content");
-	}
-
-	private Object mockReturn(Reader reader) throws IOException {
+	private Object mockMapperReturn(Reader reader) throws IOException {
 		Object body = new Object();
 		when(mapper.readValue(eq(reader), eq(Object.class))).thenReturn(body);
 		return body;
 	}
 
-	private Throwable mockThrow(Reader reader, Throwable cause) throws IOException {
+	@Test
+	void doesNotReadIfMapperThrowsDatabindException() throws IOException {
+		Reader reader = newReader();
+		Throwable cause = mock(DatabindException.class);
+		mockMapperThrow(reader, cause);
+		Exception exception = assertThrows(DeserializingException.class, () -> {
+			d.read(reader, Object.class);
+		});
+		assertSame(cause, exception.getCause());
+	}
+
+	@Test
+	void doesNotReadIfMapperThrowsIOException() throws IOException {
+		Reader reader = newReader();
+		Throwable cause = new IOException();
+		mockMapperThrow(reader, cause);
+		Exception exception = assertThrows(UncheckedIOException.class, () -> {
+			d.read(reader, Object.class);
+		});
+		assertSame(cause, exception.getCause());
+	}
+
+	private Throwable mockMapperThrow(Reader reader, Throwable cause) throws IOException {
 		when(mapper.readValue(eq(reader), eq(Object.class))).thenThrow(cause);
 		return cause;
+	}
+
+	private Reader newReader() {
+		return new StringReader("content");
 	}
 }
