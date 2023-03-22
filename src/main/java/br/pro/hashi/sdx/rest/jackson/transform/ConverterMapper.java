@@ -5,7 +5,6 @@ import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Type;
 
-import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ConverterMapper {
@@ -17,11 +16,11 @@ public class ConverterMapper {
 		this.mapper = mapper;
 	}
 
-	void writeValue(Writer writer, Object body, Type type) throws DatabindException, IOException {
+	void writeValue(Writer writer, Object body, Type type) throws IOException {
 		mapper.writerFor(factory.constructType(type)).writeValue(writer, body);
 	}
 
-	<T> T readValue(Reader reader, Type type) throws DatabindException, IOException {
+	<T> T readValue(Reader reader, Type type) throws IOException {
 		return mapper.readValue(reader, factory.constructType(type));
 	}
 }

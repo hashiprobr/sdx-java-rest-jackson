@@ -35,7 +35,7 @@ class JacksonSerializerTest {
 	}
 
 	@Test
-	void writes() throws IOException {
+	void writes() {
 		Object body = mockMapperReturn();
 		StringWriter writer = new StringWriter();
 		s.write(body, writer);
@@ -43,7 +43,7 @@ class JacksonSerializerTest {
 	}
 
 	@Test
-	void writesWithHint() throws IOException {
+	void writesWithHint() {
 		Object body = mockMapperReturn();
 		StringWriter writer = new StringWriter();
 		s.write(body, new Hint<Object>() {}.getType(), writer);
@@ -66,21 +66,25 @@ class JacksonSerializerTest {
 		assertSame(cause, exception.getCause());
 	}
 
-	private Object mockMapperReturn() throws IOException {
+	private Object mockMapperReturn() {
 		Object body = new Object();
-		doAnswer((invocation) -> {
-			Writer writer = invocation.getArgument(0);
-			writer.write("body");
-			return null;
-		}).when(mapper).writeValue(any(Writer.class), eq(body), eq(Object.class));
+		try {
+			doAnswer((invocation) -> {
+				Writer writer = invocation.getArgument(0);
+				writer.write("body");
+				return null;
+			}).when(mapper).writeValue(any(Writer.class), eq(body), eq(Object.class));
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 		return body;
 	}
 
 	@Test
-	void doesNotWriteIfMapperThrowsDatabindException() throws IOException {
+	void doesNotWriteIfMapperThrowsDatabindException() {
 		Object body = new Object();
 		Throwable cause = mock(DatabindException.class);
-		doThrow(cause).when(mapper).writeValue(any(Writer.class), eq(body), eq(Object.class));
+		mockMapperThrow(body, cause);
 		Writer writer = new StringWriter();
 		Exception exception = assertThrows(SerializingException.class, () -> {
 			s.write(body, writer);
@@ -89,14 +93,23 @@ class JacksonSerializerTest {
 	}
 
 	@Test
-	void doesNotWriteIfMapperThrowsIOException() throws IOException {
+	void doesNotWriteIfMapperThrowsIOException() {
 		Object body = new Object();
 		Throwable cause = new IOException();
-		doThrow(cause).when(mapper).writeValue(any(Writer.class), eq(body), eq(Object.class));
+		mockMapperThrow(body, cause);
 		Writer writer = new StringWriter();
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			s.write(body, writer);
 		});
 		assertSame(cause, exception.getCause());
+	}
+
+	private Throwable mockMapperThrow(Object body, Throwable cause) {
+		try {
+			doThrow(cause).when(mapper).writeValue(any(Writer.class), eq(body), eq(Object.class));
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
+		return cause;
 	}
 }

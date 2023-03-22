@@ -34,14 +34,14 @@ class JacksonDeserializerTest {
 	}
 
 	@Test
-	void reads() throws IOException {
+	void reads() {
 		Reader reader = newReader();
 		Object body = mockMapperReturn(reader);
 		assertSame(body, d.read(reader, Object.class));
 	}
 
 	@Test
-	void readsWithHint() throws IOException {
+	void readsWithHint() {
 		Reader reader = newReader();
 		Object body = mockMapperReturn(reader);
 		assertSame(body, d.read(reader, new Hint<Object>() {}.getType()));
@@ -58,14 +58,18 @@ class JacksonDeserializerTest {
 		assertInstanceOf(IOException.class, exception.getCause());
 	}
 
-	private Object mockMapperReturn(Reader reader) throws IOException {
+	private Object mockMapperReturn(Reader reader) {
 		Object body = new Object();
-		when(mapper.readValue(eq(reader), eq(Object.class))).thenReturn(body);
+		try {
+			when(mapper.readValue(eq(reader), eq(Object.class))).thenReturn(body);
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 		return body;
 	}
 
 	@Test
-	void doesNotReadIfMapperThrowsDatabindException() throws IOException {
+	void doesNotReadIfMapperThrowsDatabindException() {
 		Reader reader = newReader();
 		Throwable cause = mock(DatabindException.class);
 		mockMapperThrow(reader, cause);
@@ -76,7 +80,7 @@ class JacksonDeserializerTest {
 	}
 
 	@Test
-	void doesNotReadIfMapperThrowsIOException() throws IOException {
+	void doesNotReadIfMapperThrowsIOException() {
 		Reader reader = newReader();
 		Throwable cause = new IOException();
 		mockMapperThrow(reader, cause);
@@ -86,8 +90,12 @@ class JacksonDeserializerTest {
 		assertSame(cause, exception.getCause());
 	}
 
-	private Throwable mockMapperThrow(Reader reader, Throwable cause) throws IOException {
-		when(mapper.readValue(eq(reader), eq(Object.class))).thenThrow(cause);
+	private Throwable mockMapperThrow(Reader reader, Throwable cause) {
+		try {
+			when(mapper.readValue(eq(reader), eq(Object.class))).thenThrow(cause);
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 		return cause;
 	}
 
