@@ -28,6 +28,7 @@ public class JacksonRestServerBuilder extends RestServerBuilder {
 	 */
 	public JacksonRestServerBuilder() {
 		new JacksonInjector().inject(this);
+		addExtension();
 	}
 
 	/**
@@ -45,6 +46,7 @@ public class JacksonRestServerBuilder extends RestServerBuilder {
 	 */
 	public JacksonRestServerBuilder(String packageName) {
 		new JacksonInjector().inject(this, packageName);
+		addExtension();
 	}
 
 	/**
@@ -63,6 +65,7 @@ public class JacksonRestServerBuilder extends RestServerBuilder {
 	 */
 	public JacksonRestServerBuilder(ObjectMapper mapper, String packageName) {
 		new JacksonInjector().inject(this, mapper, packageName);
+		addExtension();
 	}
 
 	/**
@@ -78,5 +81,10 @@ public class JacksonRestServerBuilder extends RestServerBuilder {
 	 */
 	public JacksonRestServerBuilder(ObjectMapper mapper) {
 		new JacksonInjector().inject(this, mapper);
+		addExtension();
+	}
+
+	private void addExtension() {
+		this.withExtension("json", "application/json");
 	}
 }
