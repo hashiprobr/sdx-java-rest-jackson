@@ -25,12 +25,6 @@ public class JacksonSerializer implements Serializer {
 			throw new SerializingException(exception);
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
-		} finally {
-			try {
-				writer.close();
-			} catch (IOException exception) {
-				throw new UncheckedIOException(exception);
-			}
 		}
 	}
 }

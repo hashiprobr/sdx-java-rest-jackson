@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -52,18 +51,6 @@ class JacksonSerializerTest {
 
 	private void assertEqualsBody(StringWriter writer) {
 		assertEquals("body", writer.toString());
-	}
-
-	@Test
-	void doesNotWriteIfCloseThrows() throws IOException {
-		Object body = mockMapperReturn();
-		Writer writer = spy(new StringWriter());
-		Throwable cause = new IOException();
-		doThrow(cause).when(writer).close();
-		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			s.write(body, writer);
-		});
-		assertSame(cause, exception.getCause());
 	}
 
 	private Object mockMapperReturn() {

@@ -3,6 +3,7 @@ package br.pro.hashi.sdx.rest.jackson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
@@ -44,7 +45,10 @@ public class JacksonInjector extends Injector {
 	 * </p>
 	 * 
 	 * <pre>
-	 * {@code   .enable(SerializationFeature.INDENT_OUTPUT)}
+	 * {@code   .disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
+	 *   .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+	 *   .disable(SerializationFeature.CLOSE_CLOSEABLE)
+	 *   .enable(SerializationFeature.INDENT_OUTPUT)}
 	 * </pre>
 	 * 
 	 * @param builder the client or server builder
@@ -122,6 +126,9 @@ public class JacksonInjector extends Injector {
 
 	private ObjectMapper newMapper() {
 		return new ObjectMapper()
+				.disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
+				.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+				.disable(SerializationFeature.CLOSE_CLOSEABLE)
 				.enable(SerializationFeature.INDENT_OUTPUT);
 	}
 }
