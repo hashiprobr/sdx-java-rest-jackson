@@ -26,12 +26,6 @@ public class JacksonDeserializer implements Deserializer {
 			throw new DeserializingException(exception);
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);
-		} finally {
-			try {
-				reader.close();
-			} catch (IOException exception) {
-				throw new UncheckedIOException(exception);
-			}
 		}
 		return body;
 	}

@@ -47,7 +47,6 @@ public class JacksonInjector extends Injector {
 	 * <pre>
 	 * {@code   .disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
 	 *   .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-	 *   .disable(SerializationFeature.CLOSE_CLOSEABLE)
 	 *   .enable(SerializationFeature.INDENT_OUTPUT)}
 	 * </pre>
 	 * 
@@ -128,7 +127,6 @@ public class JacksonInjector extends Injector {
 		return new ObjectMapper()
 				.disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
 				.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-				.disable(SerializationFeature.CLOSE_CLOSEABLE)
 				.enable(SerializationFeature.INDENT_OUTPUT);
 	}
 }

@@ -1,12 +1,9 @@
 package br.pro.hashi.sdx.rest.jackson.transform;
 
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -45,17 +42,6 @@ class JacksonDeserializerTest {
 		Reader reader = newReader();
 		Object body = mockMapperReturn(reader);
 		assertSame(body, d.read(reader, new Hint<Object>() {}.getType()));
-	}
-
-	@Test
-	void doesNotReadIfCloseThrows() throws IOException {
-		Reader reader = spy(newReader());
-		doThrow(IOException.class).when(reader).close();
-		mockMapperReturn(reader);
-		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			d.read(reader, Object.class);
-		});
-		assertInstanceOf(IOException.class, exception.getCause());
 	}
 
 	private Object mockMapperReturn(Reader reader) {
