@@ -2,6 +2,7 @@ package br.pro.hashi.sdx.rest.jackson;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -23,6 +24,10 @@ import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.client.RestClientBuilder;
 import br.pro.hashi.sdx.rest.jackson.mock.Address;
 import br.pro.hashi.sdx.rest.jackson.mock.Email;
+import br.pro.hashi.sdx.rest.jackson.mock.ObjectWithDouble;
+import br.pro.hashi.sdx.rest.jackson.mock.ObjectWithString;
+import br.pro.hashi.sdx.rest.jackson.mock.ObjectWithTransient;
+import br.pro.hashi.sdx.rest.jackson.mock.ObjectWithoutTransient;
 import br.pro.hashi.sdx.rest.jackson.mock.Sheet;
 import br.pro.hashi.sdx.rest.jackson.mock.User;
 import br.pro.hashi.sdx.rest.jackson.mock.Wrapper;
@@ -399,6 +404,200 @@ class JacksonIntegrationTest {
 		assertEquals(2, wrappers.size());
 		assertEquals((byte) 127, wrappers.get(0).getValue());
 		assertEquals((byte) 63, wrappers.get(1).getValue());
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void serializesWithoutTransient(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		ObjectWithoutTransient object = new ObjectWithoutTransient();
+		assertReads("""
+				{
+				  "field" : true
+				}""", object, ObjectWithoutTransient.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void deserializesWithoutTransient(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		ObjectWithString object = read("""
+				{}""", ObjectWithString.class);
+		assertNull(object.getField());
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void serializesWithTransient(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		ObjectWithTransient object = new ObjectWithTransient();
+		assertReads("""
+				{ }""", object, ObjectWithTransient.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void deserializesWithTransient(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		ObjectWithTransient object = read("""
+				{
+				  "field": true
+				}""", ObjectWithTransient.class);
+		assertFalse(object.getField());
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void serializesWithNaN(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		ObjectWithDouble object = new ObjectWithDouble(Double.NaN);
+		assertReads("""
+				{
+				  "field" : NaN
+				}""", object, ObjectWithDouble.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void deserializesWithNaN(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		ObjectWithDouble object = read("""
+				{
+				  "field": NaN
+				}""", ObjectWithDouble.class);
+		assertTrue(Double.isNaN(object.getField()));
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void serializesWithNegativeInfinity(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		ObjectWithDouble object = new ObjectWithDouble(Double.NEGATIVE_INFINITY);
+		assertReads("""
+				{
+				  "field" : -Infinity
+				}""", object, ObjectWithDouble.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void deserializesWithNegativeInfinity(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		ObjectWithDouble object = read("""
+				{
+				  "field": -Infinity
+				}""", ObjectWithDouble.class);
+		assertTrue(object.getField() < 0);
+		assertTrue(Double.isInfinite(object.getField()));
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void serializesWithPositiveInfinity(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		ObjectWithDouble object = new ObjectWithDouble(Double.POSITIVE_INFINITY);
+		assertReads("""
+				{
+				  "field" : Infinity
+				}""", object, ObjectWithDouble.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void deserializesWithPositiveInfinity(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		ObjectWithDouble object = read("""
+				{
+				  "field": Infinity
+				}""", ObjectWithDouble.class);
+		assertTrue(object.getField() > 0);
+		assertTrue(Double.isInfinite(object.getField()));
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void serializesWithHtml(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		ObjectWithString object = new ObjectWithString("<div></div>");
+		assertReads("""
+				{
+				  "field" : "<div></div>"
+				}""", object, ObjectWithString.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void deserializesWithHtml(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		ObjectWithString object = read("""
+				{
+				  "field": "<div></div>"
+				}""", ObjectWithString.class);
+		assertEquals("<div></div>", object.getField());
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void serializesWithNull(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		ObjectWithString object = new ObjectWithString(null);
+		assertReads("""
+				{
+				  "field" : null
+				}""", object, ObjectWithString.class);
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void deserializesWithNull(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		ObjectWithString object = read("""
+				{
+				  "field": null
+				}""", ObjectWithString.class);
+		assertNull(object.getField());
 	}
 
 	private <T extends Builder<T>> void setUp(Class<T> type) {

@@ -23,7 +23,9 @@ public class JacksonRestServerBuilder extends RestServerBuilder {
 	 * </p>
 	 * 
 	 * <pre>
-	 * {@code   .disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
+	 * {@code   .setVisibility(PropertyAccessor.ALL, Visibility.NONE)
+	 *   .setVisibility(PropertyAccessor.FIELD, Visibility.ANY)
+	 *   .disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
 	 *   .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
 	 *   .enable(SerializationFeature.INDENT_OUTPUT)}
 	 * </pre>
