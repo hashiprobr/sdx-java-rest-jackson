@@ -5,6 +5,7 @@ import java.io.Reader;
 import java.io.Writer;
 import java.lang.reflect.Type;
 
+import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class ConverterMapper {
@@ -13,7 +14,9 @@ public class ConverterMapper {
 
 	public ConverterMapper(ConverterFactory factory, ObjectMapper mapper) {
 		this.factory = factory;
-		this.mapper = mapper;
+		this.mapper = mapper
+				.disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
+				.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
 	}
 
 	void writeValue(Writer writer, Object body, Type type) throws IOException {

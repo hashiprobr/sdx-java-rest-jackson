@@ -25,8 +25,10 @@ public class JacksonRestServerBuilder extends RestServerBuilder {
 	 * <pre>
 	 * {@code   .setVisibility(PropertyAccessor.ALL, Visibility.NONE)
 	 *   .setVisibility(PropertyAccessor.FIELD, Visibility.ANY)
-	 *   .disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
-	 *   .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+	 *   .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+	 *   .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+	 *   .disable(JsonWriteFeature.WRITE_NAN_AS_STRINGS.mappedFeature())
+	 *   .enable(JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS.mappedFeature())
 	 *   .enable(SerializationFeature.INDENT_OUTPUT)}
 	 * </pre>
 	 */

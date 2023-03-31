@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.core.json.JsonWriteFeature;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -52,8 +51,10 @@ public class JacksonInjector extends Injector {
 	 * <pre>
 	 * {@code   .setVisibility(PropertyAccessor.ALL, Visibility.NONE)
 	 *   .setVisibility(PropertyAccessor.FIELD, Visibility.ANY)
-	 *   .disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
-	 *   .disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+	 *   .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
+	 *   .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+	 *   .disable(JsonWriteFeature.WRITE_NAN_AS_STRINGS.mappedFeature())
+	 *   .enable(JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS.mappedFeature())
 	 *   .enable(SerializationFeature.INDENT_OUTPUT)}
 	 * </pre>
 	 * 
@@ -134,8 +135,6 @@ public class JacksonInjector extends Injector {
 		return new ObjectMapper()
 				.setVisibility(PropertyAccessor.ALL, Visibility.NONE)
 				.setVisibility(PropertyAccessor.FIELD, Visibility.ANY)
-				.disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
-				.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
 				.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
 				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 				.disable(JsonWriteFeature.WRITE_NAN_AS_STRINGS.mappedFeature())
