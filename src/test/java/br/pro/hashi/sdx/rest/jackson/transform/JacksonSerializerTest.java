@@ -50,6 +50,11 @@ class JacksonSerializerTest {
 	}
 
 	private void assertEqualsBody(StringWriter writer) {
+		try {
+			writer.close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 		assertEquals("body", writer.toString());
 	}
 
@@ -60,7 +65,7 @@ class JacksonSerializerTest {
 				Writer writer = invocation.getArgument(0);
 				writer.write("body");
 				return null;
-			}).when(mapper).writeValue(any(Writer.class), eq(body), eq(Object.class));
+			}).when(mapper).writeValue(any(), eq(body), eq(Object.class));
 		} catch (IOException exception) {
 			throw new AssertionError(exception);
 		}
@@ -93,7 +98,7 @@ class JacksonSerializerTest {
 
 	private Throwable mockMapperThrow(Object body, Throwable cause) {
 		try {
-			doThrow(cause).when(mapper).writeValue(any(Writer.class), eq(body), eq(Object.class));
+			doThrow(cause).when(mapper).writeValue(any(), eq(body), eq(Object.class));
 		} catch (IOException exception) {
 			throw new AssertionError(exception);
 		}

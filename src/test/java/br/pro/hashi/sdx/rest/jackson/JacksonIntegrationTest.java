@@ -5,20 +5,28 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 
 import br.pro.hashi.sdx.rest.Builder;
 import br.pro.hashi.sdx.rest.client.RestClientBuilder;
@@ -49,7 +57,7 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void serializesUserWithConverters(Class<T> type) {
 		setUp(type);
 		injectWithConverters();
-		assertReadsUser("""
+		assertSerializesUser("""
 				{
 				  "name" : "Serializing Name",
 				  "address" : [ "Serializing City", "0", "Serializing Street" ],
@@ -66,7 +74,7 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void serializesUserWithoutConverters(Class<T> type) {
 		setUp(type);
 		injectWithoutConverters();
-		assertReadsUser("""
+		assertSerializesUser("""
 				{
 				  "name" : "Serializing Name",
 				  "address" : {
@@ -83,7 +91,7 @@ class JacksonIntegrationTest {
 				""");
 	}
 
-	private void assertReadsUser(String content) {
+	private void assertSerializesUser(String content) {
 		Email email = new Email();
 		email.setLogin("serializing");
 		email.setDomain("email.com");
@@ -93,7 +101,7 @@ class JacksonIntegrationTest {
 		user.setEmail(email);
 		user.setAddress(address);
 		user.setName("Serializing Name");
-		assertReads(content, user, User.class);
+		assertSerializes(content, user, User.class);
 	}
 
 	@ParameterizedTest
@@ -103,7 +111,7 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void deserializesUserWithConverters(Class<T> type) {
 		setUp(type);
 		injectWithConverters();
-		assertWritesUser("""
+		assertDeserializesUser("""
 				{
 				  "name": "Deserializing Name",
 				  "address": [
@@ -124,7 +132,7 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void deserializesUserWithoutConverters(Class<T> type) {
 		setUp(type);
 		injectWithoutConverters();
-		assertWritesUser("""
+		assertDeserializesUser("""
 				{
 				  "name": "Deserializing Name",
 				  "address": {
@@ -141,8 +149,8 @@ class JacksonIntegrationTest {
 				""");
 	}
 
-	private void assertWritesUser(String content) {
-		User user = read(content, User.class);
+	private void assertDeserializesUser(String content) {
+		User user = deserialize(content, User.class);
 		assertEquals("Deserializing Name", user.getName());
 		Address address = user.getAddress();
 		assertEquals("Deserializing Street", address.getStreet());
@@ -161,7 +169,7 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void serializesSheetWithConverters(Class<T> type) {
 		setUp(type);
 		injectWithConverters();
-		assertReadsSheet("""
+		assertSerializesSheet("""
 				[ [ "City 0", "0", "Street 0" ], [ "City 1", "1", "Street 1" ] ]
 				""");
 	}
@@ -173,18 +181,18 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void serializesSheetWithoutConverters(Class<T> type) {
 		setUp(type);
 		injectWithoutConverters();
-		assertReadsSheet("""
+		assertSerializesSheet("""
 				{
 				  "rows" : [ [ "Street 0", "0", "City 0" ], [ "Street 1", "1", "City 1" ] ]
 				}
 				""");
 	}
 
-	private void assertReadsSheet(String content) {
+	private void assertSerializesSheet(String content) {
 		Sheet sheet = new Sheet();
 		sheet.addRow("Street 0", 0, "City 0");
 		sheet.addRow("Street 1", 1, "City 1");
-		assertReads(content, sheet, Sheet.class);
+		assertSerializes(content, sheet, Sheet.class);
 	}
 
 	@ParameterizedTest
@@ -194,7 +202,7 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void deserializesSheetWithConverters(Class<T> type) {
 		setUp(type);
 		injectWithConverters();
-		assertWritesSheet("""
+		assertDeserializesSheet("""
 				[
 				  [
 				    "City 1",
@@ -217,7 +225,7 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void deserializesSheetWithoutConverters(Class<T> type) {
 		setUp(type);
 		injectWithoutConverters();
-		assertWritesSheet("""
+		assertDeserializesSheet("""
 				{
 				  "rows": [
 				    [
@@ -235,8 +243,8 @@ class JacksonIntegrationTest {
 				""");
 	}
 
-	private void assertWritesSheet(String content) {
-		Sheet sheet = read(content, Sheet.class);
+	private void assertDeserializesSheet(String content) {
+		Sheet sheet = deserialize(content, Sheet.class);
 		List<String> row = sheet.getRow(0);
 		assertEquals("Street 1", row.get(0));
 		assertEquals("1", row.get(1));
@@ -254,7 +262,7 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void serializesBooleanWrappersWithConverters(Class<T> type) {
 		setUp(type);
 		injectWithConverters();
-		assertReadsBooleanWrappers("""
+		assertSerializesBooleanWrappers("""
 				[ "false", "true" ]
 				""", new Hint<List<Wrapper<Boolean>>>() {}.getType());
 	}
@@ -266,7 +274,7 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void serializesBooleanWrappersWithoutConverters(Class<T> type) {
 		setUp(type);
 		injectWithoutConverters();
-		assertReadsBooleanWrappers("""
+		assertSerializesBooleanWrappers("""
 				[ {
 				  "value" : false
 				}, {
@@ -275,11 +283,11 @@ class JacksonIntegrationTest {
 				""", List.class);
 	}
 
-	private void assertReadsBooleanWrappers(String content, Type type) {
+	private void assertSerializesBooleanWrappers(String content, Type type) {
 		List<Wrapper<Boolean>> wrappers = new ArrayList<>();
 		wrappers.add(new Wrapper<>(false));
 		wrappers.add(new Wrapper<>(true));
-		assertReads(content, wrappers, type);
+		assertSerializes(content, wrappers, type);
 	}
 
 	@ParameterizedTest
@@ -289,7 +297,7 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void deserializesBooleanWrappersWithConverters(Class<T> type) {
 		setUp(type);
 		injectWithConverters();
-		assertWritesBooleanWrappers("""
+		assertDeserializesBooleanWrappers("""
 				[
 				  "true",
 				  "false"
@@ -304,7 +312,7 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void deserializesBooleanWrappersWithoutConverters(Class<T> type) {
 		setUp(type);
 		injectWithoutConverters();
-		assertWritesBooleanWrappers("""
+		assertDeserializesBooleanWrappers("""
 				[
 				  {
 				    "value": true
@@ -316,8 +324,8 @@ class JacksonIntegrationTest {
 				""", new Hint<List<Wrapper<Boolean>>>() {}.getType());
 	}
 
-	private void assertWritesBooleanWrappers(String content, Type type) {
-		List<Wrapper<Boolean>> wrappers = read(content, type);
+	private void assertDeserializesBooleanWrappers(String content, Type type) {
+		List<Wrapper<Boolean>> wrappers = deserialize(content, type);
 		assertEquals(2, wrappers.size());
 		assertTrue(wrappers.get(0).getValue());
 		assertFalse(wrappers.get(1).getValue());
@@ -330,7 +338,7 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void serializesByteWrappersWithConverters(Class<T> type) {
 		setUp(type);
 		injectWithConverters();
-		assertReadsByteWrappers("""
+		assertSerializesByteWrappers("""
 				[ [ "6", "3" ], [ "1", "2", "7" ] ]
 				""", new Hint<List<Wrapper<Byte>>>() {}.getType());
 	}
@@ -342,7 +350,7 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void serializesByteWrappersWithoutConverters(Class<T> type) {
 		setUp(type);
 		injectWithoutConverters();
-		assertReadsByteWrappers("""
+		assertSerializesByteWrappers("""
 				[ {
 				  "value" : 63
 				}, {
@@ -351,11 +359,11 @@ class JacksonIntegrationTest {
 				""", List.class);
 	}
 
-	private void assertReadsByteWrappers(String content, Type type) {
+	private void assertSerializesByteWrappers(String content, Type type) {
 		List<Wrapper<Byte>> wrappers = new ArrayList<>();
 		wrappers.add(new Wrapper<>((byte) 63));
 		wrappers.add(new Wrapper<>((byte) 127));
-		assertReads(content, wrappers, type);
+		assertSerializes(content, wrappers, type);
 	}
 
 	@ParameterizedTest
@@ -365,7 +373,7 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void deserializesByteWrappersWithConverters(Class<T> type) {
 		setUp(type);
 		injectWithConverters();
-		assertWritesByteWrappers("""
+		assertDeserializesByteWrappers("""
 				[
 				  [
 				    "1",
@@ -387,7 +395,7 @@ class JacksonIntegrationTest {
 	<T extends Builder<T>> void deserializesByteWrappersWithoutConverters(Class<T> type) {
 		setUp(type);
 		injectWithoutConverters();
-		assertWritesByteWrappers("""
+		assertDeserializesByteWrappers("""
 				[
 				  {
 				    "value": 127
@@ -399,8 +407,8 @@ class JacksonIntegrationTest {
 				""", new Hint<List<Wrapper<Byte>>>() {}.getType());
 	}
 
-	private void assertWritesByteWrappers(String content, Type type) {
-		List<Wrapper<Byte>> wrappers = read(content, type);
+	private void assertDeserializesByteWrappers(String content, Type type) {
+		List<Wrapper<Byte>> wrappers = deserialize(content, type);
 		assertEquals(2, wrappers.size());
 		assertEquals((byte) 127, wrappers.get(0).getValue());
 		assertEquals((byte) 63, wrappers.get(1).getValue());
@@ -414,7 +422,7 @@ class JacksonIntegrationTest {
 		setUp(type);
 		injectWithoutConverters();
 		ObjectWithoutTransient object = new ObjectWithoutTransient();
-		assertReads("""
+		assertSerializes("""
 				{
 				  "field" : true
 				}""", object, ObjectWithoutTransient.class);
@@ -427,7 +435,7 @@ class JacksonIntegrationTest {
 	public <T extends Builder<T>> void deserializesWithoutTransient(Class<T> type) {
 		setUp(type);
 		injectWithoutConverters();
-		ObjectWithString object = read("""
+		ObjectWithString object = deserialize("""
 				{}""", ObjectWithString.class);
 		assertNull(object.getField());
 	}
@@ -440,7 +448,7 @@ class JacksonIntegrationTest {
 		setUp(type);
 		injectWithoutConverters();
 		ObjectWithTransient object = new ObjectWithTransient();
-		assertReads("""
+		assertSerializes("""
 				{ }""", object, ObjectWithTransient.class);
 	}
 
@@ -451,7 +459,7 @@ class JacksonIntegrationTest {
 	public <T extends Builder<T>> void deserializesWithTransient(Class<T> type) {
 		setUp(type);
 		injectWithoutConverters();
-		ObjectWithTransient object = read("""
+		ObjectWithTransient object = deserialize("""
 				{
 				  "field": true
 				}""", ObjectWithTransient.class);
@@ -466,7 +474,7 @@ class JacksonIntegrationTest {
 		setUp(type);
 		injectWithoutConverters();
 		ObjectWithDouble object = new ObjectWithDouble(Double.NaN);
-		assertReads("""
+		assertSerializes("""
 				{
 				  "field" : NaN
 				}""", object, ObjectWithDouble.class);
@@ -479,7 +487,7 @@ class JacksonIntegrationTest {
 	public <T extends Builder<T>> void deserializesWithNaN(Class<T> type) {
 		setUp(type);
 		injectWithoutConverters();
-		ObjectWithDouble object = read("""
+		ObjectWithDouble object = deserialize("""
 				{
 				  "field": NaN
 				}""", ObjectWithDouble.class);
@@ -494,7 +502,7 @@ class JacksonIntegrationTest {
 		setUp(type);
 		injectWithoutConverters();
 		ObjectWithDouble object = new ObjectWithDouble(Double.NEGATIVE_INFINITY);
-		assertReads("""
+		assertSerializes("""
 				{
 				  "field" : -Infinity
 				}""", object, ObjectWithDouble.class);
@@ -507,7 +515,7 @@ class JacksonIntegrationTest {
 	public <T extends Builder<T>> void deserializesWithNegativeInfinity(Class<T> type) {
 		setUp(type);
 		injectWithoutConverters();
-		ObjectWithDouble object = read("""
+		ObjectWithDouble object = deserialize("""
 				{
 				  "field": -Infinity
 				}""", ObjectWithDouble.class);
@@ -523,7 +531,7 @@ class JacksonIntegrationTest {
 		setUp(type);
 		injectWithoutConverters();
 		ObjectWithDouble object = new ObjectWithDouble(Double.POSITIVE_INFINITY);
-		assertReads("""
+		assertSerializes("""
 				{
 				  "field" : Infinity
 				}""", object, ObjectWithDouble.class);
@@ -536,7 +544,7 @@ class JacksonIntegrationTest {
 	public <T extends Builder<T>> void deserializesWithPositiveInfinity(Class<T> type) {
 		setUp(type);
 		injectWithoutConverters();
-		ObjectWithDouble object = read("""
+		ObjectWithDouble object = deserialize("""
 				{
 				  "field": Infinity
 				}""", ObjectWithDouble.class);
@@ -552,7 +560,7 @@ class JacksonIntegrationTest {
 		setUp(type);
 		injectWithoutConverters();
 		ObjectWithString object = new ObjectWithString("<div></div>");
-		assertReads("""
+		assertSerializes("""
 				{
 				  "field" : "<div></div>"
 				}""", object, ObjectWithString.class);
@@ -565,7 +573,7 @@ class JacksonIntegrationTest {
 	public <T extends Builder<T>> void deserializesWithHtml(Class<T> type) {
 		setUp(type);
 		injectWithoutConverters();
-		ObjectWithString object = read("""
+		ObjectWithString object = deserialize("""
 				{
 				  "field": "<div></div>"
 				}""", ObjectWithString.class);
@@ -580,7 +588,7 @@ class JacksonIntegrationTest {
 		setUp(type);
 		injectWithoutConverters();
 		ObjectWithString object = new ObjectWithString(null);
-		assertReads("""
+		assertSerializes("""
 				{
 				  "field" : null
 				}""", object, ObjectWithString.class);
@@ -593,22 +601,75 @@ class JacksonIntegrationTest {
 	public <T extends Builder<T>> void deserializesWithNull(Class<T> type) {
 		setUp(type);
 		injectWithoutConverters();
-		ObjectWithString object = read("""
+		ObjectWithString object = deserialize("""
 				{
 				  "field": null
 				}""", ObjectWithString.class);
 		assertNull(object.getField());
 	}
 
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void serializesConsumer(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		Consumer<JsonGenerator> consumer = (generator) -> {
+			try {
+				generator.writeStartObject();
+				generator.writeFieldName("field");
+				generator.writeStartArray();
+				generator.writeBoolean(false);
+				generator.writeBoolean(true);
+				generator.writeEndArray();
+				generator.writeEndObject();
+				generator.flush();
+			} catch (IOException exception) {
+				throw new UncheckedIOException(exception);
+			}
+		};
+		assertSerializes("""
+				{"field":[false,true]}""", consumer, new Hint<Consumer<JsonGenerator>>() {}.getType());
+	}
+
+	@ParameterizedTest
+	@ValueSource(classes = {
+			RestClientBuilder.class,
+			RestServerBuilder.class })
+	public <T extends Builder<T>> void deserializesParser(Class<T> type) {
+		setUp(type);
+		injectWithoutConverters();
+		JsonParser parser = deserialize("""
+				{
+				  "field": [
+				    false,
+				    true
+				  ]
+				}""", JsonParser.class);
+		try {
+			assertEquals(JsonToken.START_OBJECT, parser.nextToken());
+			assertEquals("field", parser.nextFieldName());
+			assertEquals(JsonToken.START_ARRAY, parser.nextToken());
+			assertFalse(parser.nextBooleanValue());
+			assertTrue(parser.nextBooleanValue());
+			assertEquals(JsonToken.END_ARRAY, parser.nextToken());
+			assertEquals(JsonToken.END_OBJECT, parser.nextToken());
+			parser.close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
+	}
+
 	private <T extends Builder<T>> void setUp(Class<T> type) {
 		serializers = new HashMap<>();
 		deserializers = new HashMap<>();
 		builder = mock(type);
-		when(builder.withSerializer(any(String.class), any(Serializer.class))).thenAnswer((invocation) -> {
+		when(builder.withSerializer(eq("application/json"), any())).thenAnswer((invocation) -> {
 			serializers.put(invocation.getArgument(0), invocation.getArgument(1));
 			return null;
 		});
-		when(builder.withDeserializer(any(String.class), any(Deserializer.class))).thenAnswer((invocation) -> {
+		when(builder.withDeserializer(eq("application/json"), any())).thenAnswer((invocation) -> {
 			deserializers.put(invocation.getArgument(0), invocation.getArgument(1));
 			return null;
 		});
@@ -623,13 +684,18 @@ class JacksonIntegrationTest {
 		injector.inject(builder);
 	}
 
-	private void assertReads(String content, Object object, Type type) {
+	private void assertSerializes(String content, Object object, Type type) {
 		StringWriter writer = new StringWriter();
 		serializers.get("application/json").write(object, type, writer);
+		try {
+			writer.close();
+		} catch (IOException exception) {
+			throw new AssertionError(exception);
+		}
 		assertEquals(content.strip(), writer.toString());
 	}
 
-	private <T> T read(String content, Type type) {
+	private <T> T deserialize(String content, Type type) {
 		Reader reader = new StringReader(content);
 		return deserializers.get("application/json").read(reader, type);
 	}

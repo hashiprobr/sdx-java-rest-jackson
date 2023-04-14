@@ -1,5 +1,8 @@
 package br.pro.hashi.sdx.rest.jackson;
 
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,6 +30,7 @@ import br.pro.hashi.sdx.rest.transform.extension.Injector;
  * type {@link RestServerBuilder}.
  */
 public class JacksonInjector extends Injector {
+	private static final Lookup LOOKUP = MethodHandles.lookup();
 	private static final String JSON_TYPE = "application/json";
 
 	private final Logger logger;
@@ -60,7 +64,7 @@ public class JacksonInjector extends Injector {
 	 * 
 	 * @param builder the client or server builder
 	 */
-	public void inject(Builder<?> builder) {
+	public final void inject(Builder<?> builder) {
 		inject(builder, newMapper());
 	}
 
@@ -79,7 +83,7 @@ public class JacksonInjector extends Injector {
 	 * @param builder     the client or server builder
 	 * @param packageName the package name
 	 */
-	public void inject(Builder<?> builder, String packageName) {
+	public final void inject(Builder<?> builder, String packageName) {
 		inject(builder, newMapper(), packageName);
 	}
 
@@ -98,10 +102,10 @@ public class JacksonInjector extends Injector {
 	 * @param mapper      the Jackson mapper
 	 * @param packageName the package name
 	 */
-	public void inject(Builder<?> builder, ObjectMapper mapper, String packageName) {
+	public final void inject(Builder<?> builder, ObjectMapper mapper, String packageName) {
 		ConverterFactory factory = new ConverterFactory(mapper);
 		ConverterModule module = new ConverterModule(factory);
-		for (JacksonConverter<?, ?> converter : getSubConverters(packageName, JacksonConverter.class)) {
+		for (JacksonConverter<?, ?> converter : getSubConverters(packageName, JacksonConverter.class, LOOKUP)) {
 			module.addConverter(converter);
 			logger.info("Registered %s".formatted(converter.getClass().getName()));
 		}
@@ -121,7 +125,7 @@ public class JacksonInjector extends Injector {
 	 * @param builder the client or server builder
 	 * @param mapper  the Jackson mapper
 	 */
-	public void inject(Builder<?> builder, ObjectMapper mapper) {
+	public final void inject(Builder<?> builder, ObjectMapper mapper) {
 		inject(builder, new ConverterMapper(new ConverterFactory(mapper), mapper));
 	}
 
