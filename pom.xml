@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.hashiprobr</groupId>
   <artifactId>sdx-rest-jackson</artifactId>
-  <version>0.7.1</version>
+  <version>0.8.1</version>
   <name>${project.groupId}:${project.artifactId}</name>
   <description>Jackson extension for sdx-rest.</description>
   <url>https://github.com/hashiprobr/sdx-java-rest-jackson</url>
@@ -31,24 +31,23 @@
   </scm>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>19</maven.compiler.source>
-    <maven.compiler.target>19</maven.compiler.target>
+    <maven.compiler.release>17</maven.compiler.release>
   </properties>
   <dependencies>
     <dependency>
       <groupId>io.github.hashiprobr</groupId>
       <artifactId>sdx-rest</artifactId>
-      <version>0.7.1</version>
+      <version>0.8.1</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.14.2</version>
+      <version>2.15.0</version>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-params</artifactId>
-      <version>5.9.2</version>
+      <version>5.9.3</version>
       <scope>test</scope>
     </dependency>
     <dependency>
