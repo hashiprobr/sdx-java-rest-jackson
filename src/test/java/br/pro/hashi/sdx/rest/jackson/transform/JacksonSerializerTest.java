@@ -1,5 +1,6 @@
 package br.pro.hashi.sdx.rest.jackson.transform;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -19,7 +20,6 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.DatabindException;
 
-import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.exception.SerializingException;
 
@@ -35,41 +35,28 @@ class JacksonSerializerTest {
 
 	@Test
 	void writes() {
-		Object body = mockMapperReturn();
-		StringWriter writer = new StringWriter();
-		s.write(body, writer);
-		assertEqualsBody(writer);
-	}
-
-	@Test
-	void writesWithHint() {
-		Object body = mockMapperReturn();
-		StringWriter writer = new StringWriter();
-		s.write(body, new Hint<Object>() {}.getType(), writer);
-		assertEqualsBody(writer);
-	}
-
-	private void assertEqualsBody(StringWriter writer) {
-		try {
-			writer.close();
-		} catch (IOException exception) {
-			throw new AssertionError(exception);
-		}
-		assertEquals("body", writer.toString());
-	}
-
-	private Object mockMapperReturn() {
 		Object body = new Object();
-		try {
+		assertDoesNotThrow(() -> {
 			doAnswer((invocation) -> {
 				Writer writer = invocation.getArgument(0);
 				writer.write("body");
 				return null;
 			}).when(mapper).writeValue(any(), eq(body), eq(Object.class));
-		} catch (IOException exception) {
-			throw new AssertionError(exception);
-		}
-		return body;
+		});
+		StringWriter writer = new StringWriter();
+		s.write(body, writer);
+		assertContentEquals("body", writer);
+	}
+
+	@Test
+	void writesNull() {
+		StringWriter writer = new StringWriter();
+		s.write(null, writer);
+		assertContentEquals("", writer);
+	}
+
+	private void assertContentEquals(String expected, StringWriter writer) {
+		assertEquals(expected, writer.toString());
 	}
 
 	@Test

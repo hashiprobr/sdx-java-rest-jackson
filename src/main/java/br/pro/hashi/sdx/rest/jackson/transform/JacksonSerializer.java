@@ -18,6 +18,11 @@ public class JacksonSerializer implements Serializer {
 	}
 
 	@Override
+	public void write(Object body, Writer writer) {
+		write(body, body == null ? Object.class : body.getClass(), writer);
+	}
+
+	@Override
 	public void write(Object body, Type type, Writer writer) {
 		try {
 			mapper.writeValue(writer, body, type);
