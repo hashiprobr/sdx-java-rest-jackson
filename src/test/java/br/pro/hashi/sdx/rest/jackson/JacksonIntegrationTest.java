@@ -673,7 +673,7 @@ class JacksonIntegrationTest {
 			deserializers.put(invocation.getArgument(0), invocation.getArgument(1));
 			return null;
 		});
-		injector = new JacksonInjector();
+		injector = JacksonInjector.getInstance();
 	}
 
 	private void injectWithConverters() {

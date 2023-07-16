@@ -14,12 +14,12 @@ import br.pro.hashi.sdx.rest.transform.extension.Converter;
 
 /**
  * <p>
- * A Jackson converter can convert objects of a source type to and from objects
- * of a target type.
+ * Implemented to convert objects of a source type to and from objects of a
+ * target type.
  * </p>
  * <p>
- * The idea is that the source type is not supported by Jackson, but the target
- * type is (possibly via another converter).
+ * The idea is that the source type is not supported by Jackson but the target
+ * type is (possibly via other converters).
  * </p>
  * 
  * @param <S> the source type

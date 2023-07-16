@@ -1,5 +1,4 @@
 /**
- * Provides convenience interfaces and classes for extending Jackson support in
- * clients and servers.
+ * Provides classes for extending transform support via Jackson.
  */
 package br.pro.hashi.sdx.rest.jackson;

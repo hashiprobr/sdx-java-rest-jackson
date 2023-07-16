@@ -44,15 +44,8 @@ class JacksonSerializerTest {
 			}).when(mapper).writeValue(any(), eq(body), eq(Object.class));
 		});
 		StringWriter writer = new StringWriter();
-		s.write(body, writer);
+		s.write(body, Object.class, writer);
 		assertContentEquals("body", writer);
-	}
-
-	@Test
-	void writesNull() {
-		StringWriter writer = new StringWriter();
-		s.write(null, writer);
-		assertContentEquals("", writer);
 	}
 
 	private void assertContentEquals(String expected, StringWriter writer) {
@@ -66,7 +59,7 @@ class JacksonSerializerTest {
 		mockMapperThrow(body, cause);
 		Writer writer = new StringWriter();
 		Exception exception = assertThrows(SerializingException.class, () -> {
-			s.write(body, writer);
+			s.write(body, Object.class, writer);
 		});
 		assertSame(cause, exception.getCause());
 	}
@@ -78,7 +71,7 @@ class JacksonSerializerTest {
 		mockMapperThrow(body, cause);
 		Writer writer = new StringWriter();
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
-			s.write(body, writer);
+			s.write(body, Object.class, writer);
 		});
 		assertSame(cause, exception.getCause());
 	}

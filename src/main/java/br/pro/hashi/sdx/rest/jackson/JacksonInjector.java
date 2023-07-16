@@ -25,27 +25,35 @@ import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 import br.pro.hashi.sdx.rest.transform.extension.Injector;
 
 /**
- * A Jackson injector can inject a Jackson-based serializer and a Jackson-based
- * deserializer in an object of type {@link RestClientBuilder} or an object of
- * type {@link RestServerBuilder}.
+ * Injects a Jackson serializer and a Jackson deserializer in a
+ * {@link RestClientBuilder} or a {@link RestServerBuilder}.
  */
 public class JacksonInjector extends Injector {
+	private static final JacksonInjector INSTANCE = new JacksonInjector();
 	private static final Lookup LOOKUP = MethodHandles.lookup();
-	private static final String JSON_TYPE = "application/json";
+
+	/**
+	 * Represents the JSON content type.
+	 */
+	public static final String JSON_TYPE = "application/json";
+
+	/**
+	 * Obtains the injector instance.
+	 */
+	public static JacksonInjector getInstance() {
+		return INSTANCE;
+	}
 
 	private final Logger logger;
 
-	/**
-	 * Constructs a new Jackson injector.
-	 */
-	public JacksonInjector() {
+	private JacksonInjector() {
 		this.logger = LoggerFactory.getLogger(JacksonInjector.class);
 	}
 
 	/**
 	 * <p>
-	 * Injects a default serializer and a default deserializer in a client or server
-	 * builder.
+	 * Injects a default serializer and a default deserializer in the specified
+	 * client or server builder.
 	 * </p>
 	 * <p>
 	 * This method instantiates an {@link ObjectMapper} with a default
@@ -65,77 +73,75 @@ public class JacksonInjector extends Injector {
 	 * @param builder the client or server builder
 	 */
 	public final void inject(Builder<?> builder) {
-		inject(builder, newMapper());
+		inject(builder, defaultObjectMapper());
+	}
+
+	/**
+	 * <p>
+	 * Injects a custom serializer and a custom deserializer in the specified client
+	 * or server builder.
+	 * </p>
+	 * <p>
+	 * This method uses the specified {@link ObjectMapper}.
+	 * </p>
+	 * 
+	 * @param builder      the client or server builder
+	 * @param objectMapper the object mapper
+	 */
+	public final void inject(Builder<?> builder, ObjectMapper objectMapper) {
+		inject(builder, new ConverterMapper(new ConverterFactory(objectMapper), objectMapper));
 	}
 
 	/**
 	 * <p>
 	 * Injects an extended default serializer and an extended default deserializer
-	 * in a client or server builder.
+	 * in the specified client or server builder.
 	 * </p>
 	 * <p>
 	 * This method instantiates an {@link ObjectMapper} with a default configuration
 	 * (see {@code inject(Builder<?>)}) and extends its type support with instances
-	 * of all concrete implementations of {@link JacksonConverter} in a specified
-	 * package.
+	 * of all concrete implementations of {@link JacksonConverter} in the specified
+	 * package (including subpackages).
 	 * </p>
 	 * 
 	 * @param builder     the client or server builder
 	 * @param packageName the package name
 	 */
 	public final void inject(Builder<?> builder, String packageName) {
-		inject(builder, newMapper(), packageName);
+		inject(builder, defaultObjectMapper(), packageName);
 	}
 
 	/**
 	 * <p>
 	 * Injects an extended custom serializer and an extended custom deserializer in
-	 * a client or server builder.
+	 * the specified client or server builder.
 	 * </p>
 	 * <p>
-	 * This method uses a specified {@link ObjectMapper} and extends its type
-	 * support with instances of all concrete implementations of
-	 * {@link JacksonConverter} in a specified package.
+	 * This method uses the specified {@link ObjectMapper} and extends its type
+	 * support (see {@code inject(Builder<?>, String)}).
 	 * </p>
 	 * 
 	 * @param builder     the client or server builder
-	 * @param mapper      the Jackson mapper
+	 * @param objectMapper      the object mapper
 	 * @param packageName the package name
 	 */
-	public final void inject(Builder<?> builder, ObjectMapper mapper, String packageName) {
-		ConverterFactory factory = new ConverterFactory(mapper);
+	public final void inject(Builder<?> builder, ObjectMapper objectMapper, String packageName) {
+		ConverterFactory factory = new ConverterFactory(objectMapper);
 		ConverterModule module = new ConverterModule(factory);
 		for (JacksonConverter<?, ?> converter : getSubConverters(packageName, JacksonConverter.class, LOOKUP)) {
 			module.addConverter(converter);
 			logger.info("Registered %s".formatted(converter.getClass().getName()));
 		}
-		mapper.registerModule(module);
-		inject(builder, new ConverterMapper(factory, mapper));
+		objectMapper.registerModule(module);
+		inject(builder, new ConverterMapper(factory, objectMapper));
 	}
 
-	/**
-	 * <p>
-	 * Injects a custom serializer and a custom deserializer in a client or server
-	 * builder.
-	 * </p>
-	 * <p>
-	 * This method uses a specified {@link ObjectMapper}.
-	 * </p>
-	 * 
-	 * @param builder the client or server builder
-	 * @param mapper  the Jackson mapper
-	 */
-	public final void inject(Builder<?> builder, ObjectMapper mapper) {
-		inject(builder, new ConverterMapper(new ConverterFactory(mapper), mapper));
+	private void inject(Builder<?> builder, ConverterMapper converterMapper) {
+		builder.withSerializer(JSON_TYPE, new JacksonSerializer(converterMapper));
+		builder.withDeserializer(JSON_TYPE, new JacksonDeserializer(converterMapper));
 	}
 
-	private void inject(Builder<?> builder, ConverterMapper mapper) {
-		builder.withSerializer(JSON_TYPE, new JacksonSerializer(mapper));
-		builder.withDeserializer(JSON_TYPE, new JacksonDeserializer(mapper));
-		builder.withFallbackType(JSON_TYPE);
-	}
-
-	private ObjectMapper newMapper() {
+	private ObjectMapper defaultObjectMapper() {
 		return new ObjectMapper()
 				.setVisibility(PropertyAccessor.ALL, Visibility.NONE)
 				.setVisibility(PropertyAccessor.FIELD, Visibility.ANY)

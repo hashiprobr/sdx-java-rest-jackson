@@ -11,21 +11,16 @@ import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.exception.SerializingException;
 
 public class JacksonSerializer implements Serializer {
-	private final ConverterMapper mapper;
+	private final ConverterMapper converterMapper;
 
-	public JacksonSerializer(ConverterMapper mapper) {
-		this.mapper = mapper;
-	}
-
-	@Override
-	public void write(Object body, Writer writer) {
-		write(body, body == null ? Object.class : body.getClass(), writer);
+	public JacksonSerializer(ConverterMapper converterMapper) {
+		this.converterMapper = converterMapper;
 	}
 
 	@Override
 	public void write(Object body, Type type, Writer writer) {
 		try {
-			mapper.writeValue(writer, body, type);
+			converterMapper.writeValue(writer, body, type);
 		} catch (DatabindException exception) {
 			throw new SerializingException(exception);
 		} catch (IOException exception) {

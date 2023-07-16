@@ -1,55 +1,68 @@
 package br.pro.hashi.sdx.rest.jackson.client;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockConstruction;
+import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.verify;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedConstruction;
+import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.MockitoAnnotations;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.pro.hashi.sdx.rest.jackson.JacksonInjector;
 
 class JacksonRestClientBuilderTest {
-	private MockedConstruction<JacksonInjector> construction;
+	private AutoCloseable mocks;
+	private @Mock JacksonInjector injector;
+	private MockedStatic<JacksonInjector> injectorStatic;
 	private JacksonRestClientBuilder b;
 
 	@BeforeEach
 	void setUp() {
-		construction = mockConstruction(JacksonInjector.class);
+		mocks = MockitoAnnotations.openMocks(this);
+
+		injectorStatic = mockStatic(JacksonInjector.class);
+		injectorStatic.when(() -> JacksonInjector.getInstance()).thenReturn(injector);
 	}
 
 	@AfterEach
 	void tearDown() {
-		construction.close();
+		injectorStatic.close();
+		assertDoesNotThrow(() -> {
+			mocks.close();
+		});
 	}
 
 	@Test
 	void constructsWithNoArgs() {
 		b = new JacksonRestClientBuilder();
-		verify(construction.constructed().get(0)).inject(b);
-	}
-
-	@Test
-	void constructsWithPackageName() {
-		b = new JacksonRestClientBuilder("package");
-		verify(construction.constructed().get(0)).inject(b, "package");
-	}
-
-	@Test
-	void constructsWithObjectMapperAndPackageName() {
-		ObjectMapper mapper = mock(ObjectMapper.class);
-		b = new JacksonRestClientBuilder(mapper, "package");
-		verify(construction.constructed().get(0)).inject(b, mapper, "package");
+		verify(injector).inject(b);
 	}
 
 	@Test
 	void constructsWithObjectMapper() {
-		ObjectMapper mapper = mock(ObjectMapper.class);
-		b = new JacksonRestClientBuilder(mapper);
-		verify(construction.constructed().get(0)).inject(b, mapper);
+		ObjectMapper objectMapper = mock(ObjectMapper.class);
+		b = new JacksonRestClientBuilder(objectMapper);
+		verify(injector).inject(b, objectMapper);
+	}
+
+	@Test
+	void constructsWithPackageName() {
+		String packageName = "package";
+		b = new JacksonRestClientBuilder(packageName);
+		verify(injector).inject(b, packageName);
+	}
+
+	@Test
+	void constructsWithObjectMapperAndPackageName() {
+		ObjectMapper objectMapper = mock(ObjectMapper.class);
+		String packageName = "package";
+		b = new JacksonRestClientBuilder(objectMapper, packageName);
+		verify(injector).inject(b, objectMapper, packageName);
 	}
 }

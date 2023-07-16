@@ -1,33 +1,45 @@
 package br.pro.hashi.sdx.rest.jackson.server;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.MockedConstruction;
+import org.mockito.MockedConstruction.MockInitializer;
+import org.mockito.MockitoAnnotations;
 
 import br.pro.hashi.sdx.rest.server.RestServer;
-import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 
 class JacksonRestServerTest {
-	private RestServer server;
+	private static final String PACKAGE_NAME = "package";
 
-	@Test
-	void builds() {
-		try (MockedConstruction<JacksonRestServerBuilder> construction = mockBuilderConstruction()) {
-			assertSame(server, JacksonRestServer.from("package"));
-			RestServerBuilder builder = construction.constructed().get(0);
-			verify(builder).build("package");
-		}
+	private AutoCloseable mocks;
+	private @Mock RestServer s;
+
+	@BeforeEach
+	void setUp() {
+		mocks = MockitoAnnotations.openMocks(this);
 	}
 
-	private MockedConstruction<JacksonRestServerBuilder> mockBuilderConstruction() {
-		server = mock(RestServer.class);
-		return mockConstruction(JacksonRestServerBuilder.class, (mock, context) -> {
-			when(mock.build("package")).thenReturn(server);
+	@AfterEach
+	void tearDown() {
+		assertDoesNotThrow(() -> {
+			mocks.close();
 		});
+	}
+
+	@Test
+	void gets() {
+		MockInitializer<JacksonRestServerBuilder> initializer = (mock, context) -> {
+			when(mock.build(PACKAGE_NAME)).thenReturn(s);
+		};
+		try (MockedConstruction<JacksonRestServerBuilder> construction = mockConstruction(JacksonRestServerBuilder.class, initializer)) {
+			assertSame(s, JacksonRestServer.from(PACKAGE_NAME));
+		}
 	}
 }

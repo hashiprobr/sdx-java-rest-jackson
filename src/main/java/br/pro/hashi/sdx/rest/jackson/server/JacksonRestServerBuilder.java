@@ -2,95 +2,79 @@ package br.pro.hashi.sdx.rest.jackson.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import br.pro.hashi.sdx.rest.jackson.JacksonConverter;
 import br.pro.hashi.sdx.rest.jackson.JacksonInjector;
-import br.pro.hashi.sdx.rest.server.RestServer;
 import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 
 /**
- * Convenience class to configure and build objects of type {@link RestServer}
- * with Jackson support.
+ * Builds REST servers with Jackson support.
  */
 public class JacksonRestServerBuilder extends RestServerBuilder {
 	/**
 	 * <p>
-	 * Constructs a server builder with a default Jackson serializer and a default
+	 * Constructs a new builder with a default Jackson serializer and a default
 	 * Jackson deserializer.
 	 * </p>
 	 * <p>
-	 * This method instantiates an {@link ObjectMapper} with a default
-	 * configuration. Namely, with the options below.
+	 * See {@link JacksonInjector#inject(br.pro.hashi.sdx.rest.Builder)}.
 	 * </p>
-	 * 
-	 * <pre>
-	 * {@code   .setVisibility(PropertyAccessor.ALL, Visibility.NONE)
-	 *   .setVisibility(PropertyAccessor.FIELD, Visibility.ANY)
-	 *   .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-	 *   .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-	 *   .disable(JsonWriteFeature.WRITE_NAN_AS_STRINGS.mappedFeature())
-	 *   .enable(JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS.mappedFeature())
-	 *   .enable(SerializationFeature.INDENT_OUTPUT)}
-	 * </pre>
 	 */
 	public JacksonRestServerBuilder() {
-		new JacksonInjector().inject(this);
-		addExtension();
+		JacksonInjector.getInstance().inject(this);
+		configure();
 	}
 
 	/**
 	 * <p>
-	 * Constructs a server builder with an extended default Jackson serializer and
-	 * an extended default Jackson deserializer.
+	 * Constructs a new builder with a custom Jackson serializer and a custom
+	 * Jackson deserializer.
+	 * </p>
+	 * See
+	 * {@link JacksonInjector#inject(br.pro.hashi.sdx.rest.Builder, ObjectMapper)}.
+	 * </p>
+	 * 
+	 * @param objectMapper the object mapper
+	 */
+	public JacksonRestServerBuilder(ObjectMapper objectMapper) {
+		JacksonInjector.getInstance().inject(this, objectMapper);
+		configure();
+	}
+
+	/**
+	 * <p>
+	 * Constructs a new builder with an extended default Jackson serializer and an
+	 * extended default Jackson deserializer.
 	 * </p>
 	 * <p>
-	 * This method instantiates an {@link ObjectMapper} with a default configuration
-	 * (see no-args constructor) and extends its type support with instances of all
-	 * concrete implementations of {@link JacksonConverter} in a specified package.
+	 * See {@link JacksonInjector#inject(br.pro.hashi.sdx.rest.Builder, String)}.
 	 * </p>
 	 * 
 	 * @param packageName the package name
 	 */
 	public JacksonRestServerBuilder(String packageName) {
-		new JacksonInjector().inject(this, packageName);
-		addExtension();
+		JacksonInjector.getInstance().inject(this, packageName);
+		configure();
 	}
 
 	/**
 	 * <p>
-	 * Constructs a server builder with an extended custom Jackson serializer and an
+	 * Constructs a new builder with an extended custom Jackson serializer and an
 	 * extended custom Jackson deserializer.
 	 * </p>
 	 * <p>
-	 * This method uses a specified {@link ObjectMapper} and extends its type
-	 * support with instances of all concrete implementations of
-	 * {@link JacksonConverter} in a specified package.
+	 * See
+	 * {@link JacksonInjector#inject(br.pro.hashi.sdx.rest.Builder, ObjectMapper, String)}.
 	 * </p>
 	 * 
-	 * @param mapper      the Jackson mapper
-	 * @param packageName the package name
+	 * @param objectMapper the object mapper
+	 * @param packageName  the package name
 	 */
-	public JacksonRestServerBuilder(ObjectMapper mapper, String packageName) {
-		new JacksonInjector().inject(this, mapper, packageName);
-		addExtension();
+	public JacksonRestServerBuilder(ObjectMapper objectMapper, String packageName) {
+		JacksonInjector.getInstance().inject(this, objectMapper, packageName);
+		configure();
 	}
 
-	/**
-	 * <p>
-	 * Constructs a server builder with a custom Jackson serializer and a custom
-	 * Jackson deserializer.
-	 * </p>
-	 * <p>
-	 * This method uses a specified {@link ObjectMapper}.
-	 * </p>
-	 * 
-	 * @param mapper the Jackson mapper
-	 */
-	public JacksonRestServerBuilder(ObjectMapper mapper) {
-		new JacksonInjector().inject(this, mapper);
-		addExtension();
-	}
-
-	private void addExtension() {
-		this.withExtensionType("json", "application/json");
+	private void configure() {
+		withExtensionType("json", JacksonInjector.JSON_TYPE);
+		withFallbackType(JacksonInjector.JSON_TYPE);
 	}
 }

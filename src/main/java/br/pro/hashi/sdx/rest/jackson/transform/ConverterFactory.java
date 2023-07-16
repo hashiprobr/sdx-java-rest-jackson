@@ -11,8 +11,8 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 public class ConverterFactory {
 	private final TypeFactory factory;
 
-	public ConverterFactory(ObjectMapper mapper) {
-		this.factory = mapper.getTypeFactory();
+	public ConverterFactory(ObjectMapper objectMapper) {
+		this.factory = objectMapper.getTypeFactory();
 	}
 
 	JavaType constructType(Type type) {

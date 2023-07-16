@@ -14,12 +14,12 @@ import br.pro.hashi.sdx.rest.Hint;
 
 public class ConverterMapper {
 	private final ConverterFactory factory;
-	private final ObjectMapper mapper;
+	private final ObjectMapper objectMapper;
 	private final Type consumerType;
 
-	public ConverterMapper(ConverterFactory factory, ObjectMapper mapper) {
+	public ConverterMapper(ConverterFactory factory, ObjectMapper objectMapper) {
 		this.factory = factory;
-		this.mapper = mapper
+		this.objectMapper = objectMapper
 				.disable(JsonGenerator.Feature.AUTO_CLOSE_JSON_CONTENT)
 				.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET);
 		this.consumerType = new Hint<Consumer<JsonGenerator>>() {}.getType();
@@ -29,10 +29,10 @@ public class ConverterMapper {
 		if (type.equals(consumerType)) {
 			@SuppressWarnings("unchecked")
 			Consumer<JsonGenerator> consumer = (Consumer<JsonGenerator>) body;
-			JsonGenerator generator = mapper.getFactory().createGenerator(writer);
+			JsonGenerator generator = objectMapper.getFactory().createGenerator(writer);
 			consumer.accept(generator);
 		} else {
-			mapper.writerFor(factory.constructType(type)).writeValue(writer, body);
+			objectMapper.writerFor(factory.constructType(type)).writeValue(writer, body);
 		}
 	}
 
@@ -40,9 +40,9 @@ public class ConverterMapper {
 	<T> T readValue(Reader reader, Type type) throws IOException {
 		T body;
 		if (type.equals(JsonParser.class)) {
-			body = (T) mapper.getFactory().createParser(reader);
+			body = (T) objectMapper.getFactory().createParser(reader);
 		} else {
-			body = mapper.readValue(reader, factory.constructType(type));
+			body = objectMapper.readValue(reader, factory.constructType(type));
 		}
 		return body;
 	}
