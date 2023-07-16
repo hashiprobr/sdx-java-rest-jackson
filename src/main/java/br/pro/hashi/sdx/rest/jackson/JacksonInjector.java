@@ -132,7 +132,7 @@ public class JacksonInjector extends Injector {
 	private void inject(Builder<?> builder, ConverterMapper mapper) {
 		builder.withSerializer(JSON_TYPE, new JacksonSerializer(mapper));
 		builder.withDeserializer(JSON_TYPE, new JacksonDeserializer(mapper));
-		builder.withFallbackTextType(JSON_TYPE);
+		builder.withFallbackType(JSON_TYPE);
 	}
 
 	private ObjectMapper newMapper() {

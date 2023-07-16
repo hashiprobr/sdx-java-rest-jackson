@@ -29,6 +29,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 
 import br.pro.hashi.sdx.rest.Builder;
+import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.client.RestClientBuilder;
 import br.pro.hashi.sdx.rest.jackson.mock.Address;
 import br.pro.hashi.sdx.rest.jackson.mock.Email;
@@ -41,7 +42,6 @@ import br.pro.hashi.sdx.rest.jackson.mock.User;
 import br.pro.hashi.sdx.rest.jackson.mock.Wrapper;
 import br.pro.hashi.sdx.rest.server.RestServerBuilder;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
-import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.Serializer;
 
 class JacksonIntegrationTest {

@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Test;
 
 import com.fasterxml.jackson.databind.DatabindException;
 
+import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
-import br.pro.hashi.sdx.rest.transform.Hint;
 import br.pro.hashi.sdx.rest.transform.exception.DeserializingException;
 
 class JacksonDeserializerTest {

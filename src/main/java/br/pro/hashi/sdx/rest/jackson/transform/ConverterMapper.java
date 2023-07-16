@@ -10,7 +10,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import br.pro.hashi.sdx.rest.transform.Hint;
+import br.pro.hashi.sdx.rest.Hint;
 
 public class ConverterMapper {
 	private final ConverterFactory factory;

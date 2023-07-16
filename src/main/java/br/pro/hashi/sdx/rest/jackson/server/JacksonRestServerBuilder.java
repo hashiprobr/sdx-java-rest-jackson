@@ -91,6 +91,6 @@ public class JacksonRestServerBuilder extends RestServerBuilder {
 	}
 
 	private void addExtension() {
-		this.withExtension("json", "application/json");
+		this.withExtensionType("json", "application/json");
 	}
 }
