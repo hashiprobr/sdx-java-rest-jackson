@@ -5,7 +5,7 @@ import java.io.UncheckedIOException;
 import java.io.Writer;
 import java.lang.reflect.Type;
 
-import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
 
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.exception.SerializingException;
@@ -21,7 +21,7 @@ public class JacksonSerializer implements Serializer {
 	public void write(Object body, Type type, Writer writer) {
 		try {
 			converterMapper.writeValue(writer, body, type);
-		} catch (DatabindException exception) {
+		} catch (StreamWriteException exception) {
 			throw new SerializingException(exception);
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);

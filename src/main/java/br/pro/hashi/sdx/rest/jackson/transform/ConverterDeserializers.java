@@ -21,62 +21,62 @@ import com.fasterxml.jackson.databind.type.ReferenceType;
 import br.pro.hashi.sdx.rest.jackson.JacksonConverter;
 
 class ConverterDeserializers implements Deserializers {
-	private final ConverterFactory factory;
-	private final Map<JavaType, JsonDeserializer<?>> deserializers;
+	private final ConverterFactory converterFactory;
+	private final Map<JavaType, JsonDeserializer<?>> map;
 
-	ConverterDeserializers(ConverterFactory factory) {
-		this.factory = factory;
-		this.deserializers = new HashMap<>();
+	ConverterDeserializers(ConverterFactory converterFactory) {
+		this.converterFactory = converterFactory;
+		this.map = new HashMap<>();
 	}
 
-	void addDeserializer(JacksonConverter<?, ?> converter) {
-		JavaType sourceType = factory.constructType(converter.getSourceType());
-		JavaType targetType = factory.constructType(converter.getTargetType());
-		deserializers.put(sourceType, converter.getJacksonDeserializer(targetType));
+	void addConverter(JacksonConverter<?, ?> converter) {
+		JavaType sourceType = converterFactory.constructType(converter.getSourceType());
+		JavaType targetType = converterFactory.constructType(converter.getTargetType());
+		map.put(sourceType, converter.getJacksonDeserializer(targetType));
 	}
 
 	@Override
 	public JsonDeserializer<?> findEnumDeserializer(Class<?> type, DeserializationConfig config, BeanDescription beanDesc) {
-		return deserializers.get(factory.constructType(type));
+		return map.get(converterFactory.constructType(type));
 	}
 
 	@Override
 	public JsonDeserializer<?> findTreeNodeDeserializer(Class<? extends JsonNode> nodeType, DeserializationConfig config, BeanDescription beanDesc) {
-		return deserializers.get(factory.constructType(nodeType));
+		return map.get(converterFactory.constructType(nodeType));
 	}
 
 	@Override
 	public JsonDeserializer<?> findBeanDeserializer(JavaType type, DeserializationConfig config, BeanDescription beanDesc) {
-		return deserializers.get(type);
+		return map.get(type);
 	}
 
 	@Override
 	public JsonDeserializer<?> findReferenceDeserializer(ReferenceType refType, DeserializationConfig config, BeanDescription beanDesc, TypeDeserializer contentTypeDeserializer, JsonDeserializer<?> contentDeserializer) {
-		return deserializers.get(refType);
+		return map.get(refType);
 	}
 
 	@Override
 	public JsonDeserializer<?> findArrayDeserializer(ArrayType type, DeserializationConfig config, BeanDescription beanDesc, TypeDeserializer elementTypeDeserializer, JsonDeserializer<?> elementDeserializer) {
-		return deserializers.get(type);
+		return map.get(type);
 	}
 
 	@Override
 	public JsonDeserializer<?> findCollectionDeserializer(CollectionType type, DeserializationConfig config, BeanDescription beanDesc, TypeDeserializer elementTypeDeserializer, JsonDeserializer<?> elementDeserializer) {
-		return deserializers.get(type);
+		return map.get(type);
 	}
 
 	@Override
 	public JsonDeserializer<?> findCollectionLikeDeserializer(CollectionLikeType type, DeserializationConfig config, BeanDescription beanDesc, TypeDeserializer elementTypeDeserializer, JsonDeserializer<?> elementDeserializer) {
-		return deserializers.get(type);
+		return map.get(type);
 	}
 
 	@Override
 	public JsonDeserializer<?> findMapDeserializer(MapType type, DeserializationConfig config, BeanDescription beanDesc, KeyDeserializer keyDeserializer, TypeDeserializer elementTypeDeserializer, JsonDeserializer<?> elementDeserializer) {
-		return deserializers.get(type);
+		return map.get(type);
 	}
 
 	@Override
 	public JsonDeserializer<?> findMapLikeDeserializer(MapLikeType type, DeserializationConfig config, BeanDescription beanDesc, KeyDeserializer keyDeserializer, TypeDeserializer elementTypeDeserializer, JsonDeserializer<?> elementDeserializer) {
-		return deserializers.get(type);
+		return map.get(type);
 	}
 }

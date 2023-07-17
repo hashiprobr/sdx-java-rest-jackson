@@ -34,6 +34,7 @@ public class JacksonRestClientBuilder extends RestClientBuilder {
 	 * </p>
 	 * 
 	 * @param objectMapper the object mapper
+	 * @throws NullPointerException if the object mapper is null
 	 */
 	public JacksonRestClientBuilder(ObjectMapper objectMapper) {
 		JacksonInjector.getInstance().inject(this, objectMapper);
@@ -50,6 +51,7 @@ public class JacksonRestClientBuilder extends RestClientBuilder {
 	 * </p>
 	 * 
 	 * @param packageName the package name
+	 * @throws NullPointerException if the package name is null
 	 */
 	public JacksonRestClientBuilder(String packageName) {
 		JacksonInjector.getInstance().inject(this, packageName);
@@ -68,6 +70,8 @@ public class JacksonRestClientBuilder extends RestClientBuilder {
 	 * 
 	 * @param objectMapper the object mapper
 	 * @param packageName  the package name
+	 * @throws NullPointerException if the object mapper is null or package name is
+	 *                              null
 	 */
 	public JacksonRestClientBuilder(ObjectMapper objectMapper, String packageName) {
 		JacksonInjector.getInstance().inject(this, objectMapper, packageName);

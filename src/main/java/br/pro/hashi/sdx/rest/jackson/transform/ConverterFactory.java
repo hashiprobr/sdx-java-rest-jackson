@@ -9,23 +9,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
 public class ConverterFactory {
-	private final TypeFactory factory;
+	private final TypeFactory typeFactory;
 
 	public ConverterFactory(ObjectMapper objectMapper) {
-		this.factory = objectMapper.getTypeFactory();
+		this.typeFactory = objectMapper.getTypeFactory();
 	}
 
 	JavaType constructType(Type type) {
 		JavaType javaType;
 		if (type instanceof ParameterizedType) {
-			javaType = constructType((ParameterizedType) type);
+			javaType = constructParametricType((ParameterizedType) type);
 		} else {
-			javaType = factory.constructType(type);
+			javaType = typeFactory.constructType(type);
 		}
 		return javaType;
 	}
 
-	private JavaType constructType(ParameterizedType type) {
+	private JavaType constructParametricType(ParameterizedType type) {
 		JavaType javaType = null;
 
 		Stack<Node> stack = new Stack<>();
@@ -44,7 +44,7 @@ public class ConverterFactory {
 				if (parameter instanceof ParameterizedType) {
 					stack.push(new Node((ParameterizedType) parameter));
 				} else {
-					node.setJavaParameter(factory.constructType(parameter));
+					node.setJavaParameter(typeFactory.constructType(parameter));
 				}
 			} else {
 				javaType = node.construct();
@@ -56,15 +56,14 @@ public class ConverterFactory {
 	}
 
 	private class Node {
-		private final Type type;
+		private final Class<?> type;
 		private final Type[] parameters;
 		private final JavaType[] javaParameters;
 		private int index;
 
 		private Node(ParameterizedType type) {
-			Type[] parameters = type.getActualTypeArguments();
-			this.type = type.getRawType();
-			this.parameters = parameters;
+			this.type = (Class<?>) type.getRawType();
+			this.parameters = type.getActualTypeArguments();
 			this.javaParameters = new JavaType[parameters.length];
 			this.index = 0;
 		}
@@ -83,7 +82,7 @@ public class ConverterFactory {
 		}
 
 		private JavaType construct() {
-			return factory.constructParametricType((Class<?>) type, javaParameters);
+			return typeFactory.constructParametricType(type, javaParameters);
 		}
 	}
 }

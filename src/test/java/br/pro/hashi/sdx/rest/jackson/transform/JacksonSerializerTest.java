@@ -18,19 +18,19 @@ import java.io.Writer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.core.exc.StreamWriteException;
 
 import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.exception.SerializingException;
 
 class JacksonSerializerTest {
-	private ConverterMapper mapper;
+	private ConverterMapper converterMapper;
 	private Serializer s;
 
 	@BeforeEach
 	void setUp() {
-		mapper = mock(ConverterMapper.class);
-		s = new JacksonSerializer(mapper);
+		converterMapper = mock(ConverterMapper.class);
+		s = new JacksonSerializer(converterMapper);
 	}
 
 	@Test
@@ -41,7 +41,7 @@ class JacksonSerializerTest {
 				Writer writer = invocation.getArgument(0);
 				writer.write("body");
 				return null;
-			}).when(mapper).writeValue(any(), eq(body), eq(Object.class));
+			}).when(converterMapper).writeValue(any(), eq(body), eq(Object.class));
 		});
 		StringWriter writer = new StringWriter();
 		s.write(body, Object.class, writer);
@@ -53,9 +53,9 @@ class JacksonSerializerTest {
 	}
 
 	@Test
-	void doesNotWriteIfMapperThrowsDatabindException() {
+	void doesNotWriteIfMapperThrowsStreamWriteException() {
 		Object body = new Object();
-		Throwable cause = mock(DatabindException.class);
+		Throwable cause = mock(StreamWriteException.class);
 		mockMapperThrow(body, cause);
 		Writer writer = new StringWriter();
 		Exception exception = assertThrows(SerializingException.class, () -> {
@@ -78,7 +78,7 @@ class JacksonSerializerTest {
 
 	private Throwable mockMapperThrow(Object body, Throwable cause) {
 		try {
-			doThrow(cause).when(mapper).writeValue(any(), eq(body), eq(Object.class));
+			doThrow(cause).when(converterMapper).writeValue(any(), eq(body), eq(Object.class));
 		} catch (IOException exception) {
 			throw new AssertionError(exception);
 		}

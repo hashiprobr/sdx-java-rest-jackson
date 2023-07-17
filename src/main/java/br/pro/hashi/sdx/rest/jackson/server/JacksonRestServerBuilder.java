@@ -28,11 +28,13 @@ public class JacksonRestServerBuilder extends RestServerBuilder {
 	 * Constructs a new builder with a custom Jackson serializer and a custom
 	 * Jackson deserializer.
 	 * </p>
+	 * <p>
 	 * See
 	 * {@link JacksonInjector#inject(br.pro.hashi.sdx.rest.Builder, ObjectMapper)}.
 	 * </p>
 	 * 
 	 * @param objectMapper the object mapper
+	 * @throws NullPointerException if the object mapper is null
 	 */
 	public JacksonRestServerBuilder(ObjectMapper objectMapper) {
 		JacksonInjector.getInstance().inject(this, objectMapper);
@@ -49,6 +51,7 @@ public class JacksonRestServerBuilder extends RestServerBuilder {
 	 * </p>
 	 * 
 	 * @param packageName the package name
+	 * @throws NullPointerException if the package name is null
 	 */
 	public JacksonRestServerBuilder(String packageName) {
 		JacksonInjector.getInstance().inject(this, packageName);
@@ -67,6 +70,8 @@ public class JacksonRestServerBuilder extends RestServerBuilder {
 	 * 
 	 * @param objectMapper the object mapper
 	 * @param packageName  the package name
+	 * @throws NullPointerException if the object mapper is null or package name is
+	 *                              null
 	 */
 	public JacksonRestServerBuilder(ObjectMapper objectMapper, String packageName) {
 		JacksonInjector.getInstance().inject(this, objectMapper, packageName);

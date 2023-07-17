@@ -28,7 +28,7 @@ import br.pro.hashi.sdx.rest.jackson.JacksonConverter;
 class ConverterDeserializersTest {
 	private JsonDeserializer<?> expected;
 	private JacksonConverter<?, ?> converter;
-	private ConverterFactory factory;
+	private ConverterFactory converterFactory;
 	private ConverterDeserializers d;
 	private DeserializationConfig config;
 	private BeanDescription description;
@@ -41,8 +41,8 @@ class ConverterDeserializersTest {
 		expected = mock(JsonDeserializer.class);
 		converter = mock(JacksonConverter.class);
 		doReturn(expected).when(converter).getJacksonDeserializer(any());
-		factory = mock(ConverterFactory.class);
-		d = new ConverterDeserializers(factory);
+		converterFactory = mock(ConverterFactory.class);
+		d = new ConverterDeserializers(converterFactory);
 		config = mock(DeserializationConfig.class);
 		description = mock(BeanDescription.class);
 		keyDeserializer = mock(KeyDeserializer.class);
@@ -133,8 +133,8 @@ class ConverterDeserializersTest {
 
 	private <T extends JavaType> T mockType(Class<T> type) {
 		T javaType = mock(type);
-		doReturn(javaType).when(factory).constructType(any());
-		d.addDeserializer(converter);
+		doReturn(javaType).when(converterFactory).constructType(any());
+		d.addConverter(converter);
 		return javaType;
 	}
 }

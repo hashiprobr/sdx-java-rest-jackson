@@ -5,7 +5,7 @@ import java.io.Reader;
 import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
 
-import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.exception.DeserializingException;
@@ -22,7 +22,7 @@ public class JacksonDeserializer implements Deserializer {
 		T body;
 		try {
 			body = converterMapper.readValue(reader, type);
-		} catch (DatabindException exception) {
+		} catch (StreamReadException exception) {
 			throw new DeserializingException(exception);
 		} catch (IOException exception) {
 			throw new UncheckedIOException(exception);

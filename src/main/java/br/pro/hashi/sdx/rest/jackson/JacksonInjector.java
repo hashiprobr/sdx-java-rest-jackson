@@ -56,21 +56,22 @@ public class JacksonInjector extends Injector {
 	 * client or server builder.
 	 * </p>
 	 * <p>
-	 * This method instantiates an {@link ObjectMapper} with a default
-	 * configuration. Namely, with the options below.
+	 * This method uses an {@link ObjectMapper} with a default configuration.
+	 * Namely, with the options below.
 	 * </p>
 	 * 
 	 * <pre>
-	 * {@code   .setVisibility(PropertyAccessor.ALL, Visibility.NONE)
-	 *   .setVisibility(PropertyAccessor.FIELD, Visibility.ANY)
+	 * {@code   .enable(SerializationFeature.INDENT_OUTPUT)
+	 *   .enable(JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS.mappedFeature())
 	 *   .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
 	 *   .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 	 *   .disable(JsonWriteFeature.WRITE_NAN_AS_STRINGS.mappedFeature())
-	 *   .enable(JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS.mappedFeature())
-	 *   .enable(SerializationFeature.INDENT_OUTPUT)}
+	 *   .setVisibility(PropertyAccessor.ALL, Visibility.NONE)
+	 *   .setVisibility(PropertyAccessor.FIELD, Visibility.ANY)}
 	 * </pre>
 	 * 
 	 * @param builder the client or server builder
+	 * @throws NullPointerException if the client or server builder is null
 	 */
 	public final void inject(Builder<?> builder) {
 		inject(builder, defaultObjectMapper());
@@ -87,6 +88,8 @@ public class JacksonInjector extends Injector {
 	 * 
 	 * @param builder      the client or server builder
 	 * @param objectMapper the object mapper
+	 * @throws NullPointerException if the client or server builder is null or the
+	 *                              object mapper is null
 	 */
 	public final void inject(Builder<?> builder, ObjectMapper objectMapper) {
 		inject(builder, new ConverterMapper(new ConverterFactory(objectMapper), objectMapper));
@@ -98,14 +101,16 @@ public class JacksonInjector extends Injector {
 	 * in the specified client or server builder.
 	 * </p>
 	 * <p>
-	 * This method instantiates an {@link ObjectMapper} with a default configuration
-	 * (see {@code inject(Builder<?>)}) and extends its type support with instances
-	 * of all concrete implementations of {@link JacksonConverter} in the specified
+	 * This method uses an {@link ObjectMapper} with a default configuration (see
+	 * {@code inject(Builder<?>)}) and extends its type support with instances of
+	 * all concrete implementations of {@link JacksonConverter} in the specified
 	 * package (including subpackages).
 	 * </p>
 	 * 
 	 * @param builder     the client or server builder
 	 * @param packageName the package name
+	 * @throws NullPointerException if the client or server builder is null or the
+	 *                              package name is null
 	 */
 	public final void inject(Builder<?> builder, String packageName) {
 		inject(builder, defaultObjectMapper(), packageName);
@@ -121,34 +126,40 @@ public class JacksonInjector extends Injector {
 	 * support (see {@code inject(Builder<?>, String)}).
 	 * </p>
 	 * 
-	 * @param builder     the client or server builder
-	 * @param objectMapper      the object mapper
-	 * @param packageName the package name
+	 * @param builder      the client or server builder
+	 * @param objectMapper the object mapper
+	 * @param packageName  the package name
+	 * @throws NullPointerException if the client or server builder is null, the
+	 *                              object mapper is null, or the package name is
+	 *                              null
 	 */
 	public final void inject(Builder<?> builder, ObjectMapper objectMapper, String packageName) {
-		ConverterFactory factory = new ConverterFactory(objectMapper);
-		ConverterModule module = new ConverterModule(factory);
+		ConverterFactory converterFactory = new ConverterFactory(objectMapper);
+		ConverterModule module = new ConverterModule(converterFactory);
 		for (JacksonConverter<?, ?> converter : getSubConverters(packageName, JacksonConverter.class, LOOKUP)) {
-			module.addConverter(converter);
+			module.registerConverter(converter);
 			logger.info("Registered %s".formatted(converter.getClass().getName()));
 		}
 		objectMapper.registerModule(module);
-		inject(builder, new ConverterMapper(factory, objectMapper));
+		inject(builder, new ConverterMapper(converterFactory, objectMapper));
 	}
 
 	private void inject(Builder<?> builder, ConverterMapper converterMapper) {
+		if (builder == null) {
+			throw new NullPointerException("Builder cannot be null");
+		}
 		builder.withSerializer(JSON_TYPE, new JacksonSerializer(converterMapper));
 		builder.withDeserializer(JSON_TYPE, new JacksonDeserializer(converterMapper));
 	}
 
 	private ObjectMapper defaultObjectMapper() {
 		return new ObjectMapper()
-				.setVisibility(PropertyAccessor.ALL, Visibility.NONE)
-				.setVisibility(PropertyAccessor.FIELD, Visibility.ANY)
+				.enable(SerializationFeature.INDENT_OUTPUT)
+				.enable(JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS.mappedFeature())
 				.disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
 				.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 				.disable(JsonWriteFeature.WRITE_NAN_AS_STRINGS.mappedFeature())
-				.enable(JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS.mappedFeature())
-				.enable(SerializationFeature.INDENT_OUTPUT);
+				.setVisibility(PropertyAccessor.ALL, Visibility.NONE)
+				.setVisibility(PropertyAccessor.FIELD, Visibility.ANY);
 	}
 }

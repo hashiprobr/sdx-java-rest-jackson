@@ -13,20 +13,20 @@ import java.io.UncheckedIOException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 
 import br.pro.hashi.sdx.rest.Hint;
 import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.exception.DeserializingException;
 
 class JacksonDeserializerTest {
-	private ConverterMapper mapper;
+	private ConverterMapper converterMapper;
 	private Deserializer d;
 
 	@BeforeEach
 	void setUp() {
-		mapper = mock(ConverterMapper.class);
-		d = new JacksonDeserializer(mapper);
+		converterMapper = mock(ConverterMapper.class);
+		d = new JacksonDeserializer(converterMapper);
 	}
 
 	@Test
@@ -46,7 +46,7 @@ class JacksonDeserializerTest {
 	private Object mockMapperReturn(Reader reader) {
 		Object body = new Object();
 		try {
-			when(mapper.readValue(reader, Object.class)).thenReturn(body);
+			when(converterMapper.readValue(reader, Object.class)).thenReturn(body);
 		} catch (IOException exception) {
 			throw new AssertionError(exception);
 		}
@@ -54,9 +54,9 @@ class JacksonDeserializerTest {
 	}
 
 	@Test
-	void doesNotReadIfMapperThrowsDatabindException() {
+	void doesNotReadIfMapperThrowsStreamReadException() {
 		Reader reader = newReader();
-		Throwable cause = mock(DatabindException.class);
+		Throwable cause = mock(StreamReadException.class);
 		mockMapperThrow(reader, cause);
 		Exception exception = assertThrows(DeserializingException.class, () -> {
 			d.read(reader, Object.class);
@@ -77,7 +77,7 @@ class JacksonDeserializerTest {
 
 	private Throwable mockMapperThrow(Reader reader, Throwable cause) {
 		try {
-			when(mapper.readValue(reader, Object.class)).thenThrow(cause);
+			when(converterMapper.readValue(reader, Object.class)).thenThrow(cause);
 		} catch (IOException exception) {
 			throw new AssertionError(exception);
 		}

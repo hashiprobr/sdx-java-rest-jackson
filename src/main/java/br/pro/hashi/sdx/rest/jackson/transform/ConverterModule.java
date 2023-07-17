@@ -9,14 +9,14 @@ public class ConverterModule extends Module {
 	private final ConverterSerializers serializers;
 	private final ConverterDeserializers deserializers;
 
-	public ConverterModule(ConverterFactory factory) {
-		this.serializers = new ConverterSerializers(factory);
-		this.deserializers = new ConverterDeserializers(factory);
+	public ConverterModule(ConverterFactory converterFactory) {
+		this.serializers = new ConverterSerializers(converterFactory);
+		this.deserializers = new ConverterDeserializers(converterFactory);
 	}
 
-	public void addConverter(JacksonConverter<?, ?> converter) {
-		serializers.addSerializer(converter);
-		deserializers.addDeserializer(converter);
+	public void registerConverter(JacksonConverter<?, ?> converter) {
+		serializers.addConverter(converter);
+		deserializers.addConverter(converter);
 	}
 
 	@Override

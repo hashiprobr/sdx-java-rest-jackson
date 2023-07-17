@@ -19,52 +19,52 @@ import com.fasterxml.jackson.databind.type.ReferenceType;
 import br.pro.hashi.sdx.rest.jackson.JacksonConverter;
 
 class ConverterSerializers implements Serializers {
-	private final ConverterFactory factory;
-	private final Map<JavaType, JsonSerializer<?>> serializers;
+	private final ConverterFactory converterFactory;
+	private final Map<JavaType, JsonSerializer<?>> map;
 
-	ConverterSerializers(ConverterFactory factory) {
-		this.factory = factory;
-		this.serializers = new HashMap<>();
+	ConverterSerializers(ConverterFactory converterFactory) {
+		this.converterFactory = converterFactory;
+		this.map = new HashMap<>();
 	}
 
-	void addSerializer(JacksonConverter<?, ?> converter) {
-		JavaType sourceType = factory.constructType(converter.getSourceType());
-		JavaType targetType = factory.constructType(converter.getTargetType());
-		serializers.put(sourceType, converter.getJacksonSerializer(targetType));
+	void addConverter(JacksonConverter<?, ?> converter) {
+		JavaType sourceType = converterFactory.constructType(converter.getSourceType());
+		JavaType targetType = converterFactory.constructType(converter.getTargetType());
+		map.put(sourceType, converter.getJacksonSerializer(targetType));
 	}
 
 	@Override
 	public JsonSerializer<?> findSerializer(SerializationConfig config, JavaType type, BeanDescription beanDesc) {
-		return serializers.get(type);
+		return map.get(type);
 	}
 
 	@Override
 	public JsonSerializer<?> findReferenceSerializer(SerializationConfig config, ReferenceType type, BeanDescription beanDesc, TypeSerializer contentTypeSerializer, JsonSerializer<Object> contentValueSerializer) {
-		return serializers.get(type);
+		return map.get(type);
 	}
 
 	@Override
 	public JsonSerializer<?> findArraySerializer(SerializationConfig config, ArrayType type, BeanDescription beanDesc, TypeSerializer elementTypeSerializer, JsonSerializer<Object> elementValueSerializer) {
-		return serializers.get(type);
+		return map.get(type);
 	}
 
 	@Override
 	public JsonSerializer<?> findCollectionSerializer(SerializationConfig config, CollectionType type, BeanDescription beanDesc, TypeSerializer elementTypeSerializer, JsonSerializer<Object> elementValueSerializer) {
-		return serializers.get(type);
+		return map.get(type);
 	}
 
 	@Override
 	public JsonSerializer<?> findCollectionLikeSerializer(SerializationConfig config, CollectionLikeType type, BeanDescription beanDesc, TypeSerializer elementTypeSerializer, JsonSerializer<Object> elementValueSerializer) {
-		return serializers.get(type);
+		return map.get(type);
 	}
 
 	@Override
 	public JsonSerializer<?> findMapSerializer(SerializationConfig config, MapType type, BeanDescription beanDesc, JsonSerializer<Object> keySerializer, TypeSerializer elementTypeSerializer, JsonSerializer<Object> elementValueSerializer) {
-		return serializers.get(type);
+		return map.get(type);
 	}
 
 	@Override
 	public JsonSerializer<?> findMapLikeSerializer(SerializationConfig config, MapLikeType type, BeanDescription beanDesc, JsonSerializer<Object> keySerializer, TypeSerializer elementTypeSerializer, JsonSerializer<Object> elementValueSerializer) {
-		return serializers.get(type);
+		return map.get(type);
 	}
 }
