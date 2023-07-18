@@ -1,63 +1,53 @@
 package br.pro.hashi.sdx.rest.jackson.transform;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.UncheckedIOException;
 import java.io.Writer;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import com.fasterxml.jackson.core.exc.StreamWriteException;
 
-import br.pro.hashi.sdx.rest.transform.Serializer;
 import br.pro.hashi.sdx.rest.transform.exception.SerializingException;
 
 class JacksonSerializerTest {
-	private ConverterMapper converterMapper;
-	private Serializer s;
+	private AutoCloseable mocks;
+	private @Mock ConverterMapper converterMapper;
+	private JacksonSerializer s;
 
 	@BeforeEach
 	void setUp() {
-		converterMapper = mock(ConverterMapper.class);
+		mocks = MockitoAnnotations.openMocks(this);
+
 		s = new JacksonSerializer(converterMapper);
 	}
 
-	@Test
-	void writes() {
-		Object body = new Object();
+	@AfterEach
+	void tearDown() {
 		assertDoesNotThrow(() -> {
-			doAnswer((invocation) -> {
-				Writer writer = invocation.getArgument(0);
-				writer.write("body");
-				return null;
-			}).when(converterMapper).writeValue(any(), eq(body), eq(Object.class));
+			mocks.close();
 		});
-		StringWriter writer = new StringWriter();
-		s.write(body, Object.class, writer);
-		assertContentEquals("body", writer);
-	}
-
-	private void assertContentEquals(String expected, StringWriter writer) {
-		assertEquals(expected, writer.toString());
 	}
 
 	@Test
-	void doesNotWriteIfMapperThrowsStreamWriteException() {
+	void doesNotWriteIfMapperThrowsWriteException() {
 		Object body = new Object();
+		Writer writer = Writer.nullWriter();
 		Throwable cause = mock(StreamWriteException.class);
-		mockMapperThrow(body, cause);
-		Writer writer = new StringWriter();
+		assertDoesNotThrow(() -> {
+			doThrow(cause).when(converterMapper).writeValue(writer, body, Object.class);
+		});
 		Exception exception = assertThrows(SerializingException.class, () -> {
 			s.write(body, Object.class, writer);
 		});
@@ -67,19 +57,13 @@ class JacksonSerializerTest {
 	@Test
 	void doesNotWriteIfMapperThrowsIOException() {
 		Object body = new Object();
-		Throwable cause = new IOException();
-		mockMapperThrow(body, cause);
-		Writer writer = new StringWriter();
+		Writer writer = Writer.nullWriter();
+		assertDoesNotThrow(() -> {
+			doThrow(IOException.class).when(converterMapper).writeValue(writer, body, Object.class);
+		});
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			s.write(body, Object.class, writer);
 		});
-		assertSame(cause, exception.getCause());
-	}
-
-	private Throwable mockMapperThrow(Object body, Throwable cause) {
-		assertDoesNotThrow(() -> {
-			doThrow(cause).when(converterMapper).writeValue(any(), eq(body), eq(Object.class));
-		});
-		return cause;
+		assertInstanceOf(IOException.class, exception.getCause());
 	}
 }

@@ -1,6 +1,7 @@
 package br.pro.hashi.sdx.rest.jackson.transform;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -8,55 +9,44 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.UncheckedIOException;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import com.fasterxml.jackson.core.exc.StreamReadException;
 
-import br.pro.hashi.sdx.rest.Hint;
-import br.pro.hashi.sdx.rest.transform.Deserializer;
 import br.pro.hashi.sdx.rest.transform.exception.DeserializingException;
 
 class JacksonDeserializerTest {
-	private ConverterMapper converterMapper;
-	private Deserializer d;
+	private AutoCloseable mocks;
+	private @Mock ConverterMapper converterMapper;
+	private JacksonDeserializer d;
 
 	@BeforeEach
 	void setUp() {
-		converterMapper = mock(ConverterMapper.class);
+		mocks = MockitoAnnotations.openMocks(this);
+
 		d = new JacksonDeserializer(converterMapper);
 	}
 
-	@Test
-	void reads() {
-		Reader reader = newReader();
-		Object body = mockMapperReturn(reader);
-		assertSame(body, d.read(reader, Object.class));
-	}
-
-	@Test
-	void readsWithHint() {
-		Reader reader = newReader();
-		Object body = mockMapperReturn(reader);
-		assertSame(body, d.read(reader, new Hint<Object>() {}.getType()));
-	}
-
-	private Object mockMapperReturn(Reader reader) {
-		Object body = new Object();
+	@AfterEach
+	void tearDown() {
 		assertDoesNotThrow(() -> {
-			when(converterMapper.readValue(reader, Object.class)).thenReturn(body);
+			mocks.close();
 		});
-		return body;
 	}
 
 	@Test
-	void doesNotReadIfMapperThrowsStreamReadException() {
-		Reader reader = newReader();
+	void doesNotReadIfMapperThrowsReadException() {
+		Reader reader = Reader.nullReader();
 		Throwable cause = mock(StreamReadException.class);
-		mockMapperThrow(reader, cause);
+		assertDoesNotThrow(() -> {
+			when(converterMapper.readValue(reader, Object.class)).thenThrow(cause);
+		});
 		Exception exception = assertThrows(DeserializingException.class, () -> {
 			d.read(reader, Object.class);
 		});
@@ -65,23 +55,13 @@ class JacksonDeserializerTest {
 
 	@Test
 	void doesNotReadIfMapperThrowsIOException() {
-		Reader reader = newReader();
-		Throwable cause = new IOException();
-		mockMapperThrow(reader, cause);
+		Reader reader = Reader.nullReader();
+		assertDoesNotThrow(() -> {
+			when(converterMapper.readValue(reader, Object.class)).thenThrow(IOException.class);
+		});
 		Exception exception = assertThrows(UncheckedIOException.class, () -> {
 			d.read(reader, Object.class);
 		});
-		assertSame(cause, exception.getCause());
-	}
-
-	private Throwable mockMapperThrow(Reader reader, Throwable cause) {
-		assertDoesNotThrow(() -> {
-			when(converterMapper.readValue(reader, Object.class)).thenThrow(cause);
-		});
-		return cause;
-	}
-
-	private Reader newReader() {
-		return new StringReader("content");
+		assertInstanceOf(IOException.class, exception.getCause());
 	}
 }

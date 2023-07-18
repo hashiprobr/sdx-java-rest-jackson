@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.github.hashiprobr</groupId>
   <artifactId>sdx-rest-jackson</artifactId>
-  <version>0.9.7</version>
+  <version>0.9.9</version>
   <name>${project.groupId}:${project.artifactId}</name>
   <description>Jackson extension for sdx-rest.</description>
   <url>https://github.com/hashiprobr/sdx-java-rest-jackson</url>
@@ -37,7 +37,7 @@
     <dependency>
       <groupId>io.github.hashiprobr</groupId>
       <artifactId>sdx-rest</artifactId>
-      <version>0.9.7</version>
+      <version>0.9.9</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>

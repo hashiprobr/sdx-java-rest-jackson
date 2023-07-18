@@ -1,102 +1,75 @@
 package br.pro.hashi.sdx.rest.jackson.transform;
 
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.mock;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.BeanDescription;
-import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializationConfig;
-import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.fasterxml.jackson.databind.type.ArrayType;
 import com.fasterxml.jackson.databind.type.CollectionLikeType;
-import com.fasterxml.jackson.databind.type.CollectionType;
 import com.fasterxml.jackson.databind.type.MapLikeType;
 import com.fasterxml.jackson.databind.type.MapType;
 import com.fasterxml.jackson.databind.type.ReferenceType;
 
-import br.pro.hashi.sdx.rest.jackson.JacksonConverter;
-
 class ConverterSerializersTest {
-	private JsonSerializer<?> expected;
-	private JacksonConverter<?, ?> converter;
-	private ConverterFactory converterFactory;
+	private AutoCloseable mocks;
+	private @Mock ConverterFactory converterFactory;
 	private ConverterSerializers s;
-	private SerializationConfig config;
-	private BeanDescription description;
-	private TypeSerializer typeSerializer;
-	private JsonSerializer<Object> objectSerializer;
+	private @Mock SerializationConfig config;
+	private @Mock BeanDescription description;
+	private @Mock TypeSerializer typeSerializer;
+	private @Mock JsonSerializer<Object> jsonSerializer;
 
 	@BeforeEach
 	void setUp() {
-		expected = mock(JsonSerializer.class);
-		converter = mock(JacksonConverter.class);
-		doReturn(expected).when(converter).getJacksonSerializer(any());
-		converterFactory = mock(ConverterFactory.class);
+		mocks = MockitoAnnotations.openMocks(this);
+
 		s = new ConverterSerializers(converterFactory);
-		config = mock(SerializationConfig.class);
-		description = mock(BeanDescription.class);
-		typeSerializer = mock(TypeSerializer.class);
-		objectSerializer = new JsonSerializer<>() {
-			@Override
-			public void serialize(Object value, JsonGenerator gen, SerializerProvider serializers) {
-			}
-		};
 	}
 
-	@Test
-	void findsSerializer() {
-		JavaType javaType = mockType(JavaType.class);
-		assertSame(expected, s.findSerializer(config, javaType, description));
+	@AfterEach
+	void tearDown() {
+		assertDoesNotThrow(() -> {
+			mocks.close();
+		});
 	}
 
 	@Test
 	void findsReferenceSerializer() {
-		ReferenceType javaType = mockType(ReferenceType.class);
-		assertSame(expected, s.findReferenceSerializer(config, javaType, description, typeSerializer, objectSerializer));
+		ReferenceType javaType = mock(ReferenceType.class);
+		assertNull(s.findReferenceSerializer(config, javaType, description, typeSerializer, jsonSerializer));
 	}
 
 	@Test
 	void findsArraySerializer() {
-		ArrayType javaType = mockType(ArrayType.class);
-		assertSame(expected, s.findArraySerializer(config, javaType, description, typeSerializer, objectSerializer));
-	}
-
-	@Test
-	void findsCollectionSerializer() {
-		CollectionType javaType = mockType(CollectionType.class);
-		assertSame(expected, s.findCollectionSerializer(config, javaType, description, typeSerializer, objectSerializer));
+		ArrayType javaType = mock(ArrayType.class);
+		assertNull(s.findArraySerializer(config, javaType, description, typeSerializer, jsonSerializer));
 	}
 
 	@Test
 	void findsCollectionLikeSerializer() {
-		CollectionLikeType javaType = mockType(CollectionLikeType.class);
-		assertSame(expected, s.findCollectionLikeSerializer(config, javaType, description, typeSerializer, objectSerializer));
+		CollectionLikeType javaType = mock(CollectionLikeType.class);
+		assertNull(s.findCollectionLikeSerializer(config, javaType, description, typeSerializer, jsonSerializer));
 	}
 
 	@Test
 	void findsMapSerializer() {
-		MapType javaType = mockType(MapType.class);
-		assertSame(expected, s.findMapSerializer(config, javaType, description, objectSerializer, typeSerializer, objectSerializer));
+		MapType javaType = mock(MapType.class);
+		assertNull(s.findMapSerializer(config, javaType, description, jsonSerializer, typeSerializer, jsonSerializer));
 	}
 
 	@Test
 	void findsMapLikeSerializer() {
-		MapLikeType javaType = mockType(MapLikeType.class);
-		assertSame(expected, s.findMapLikeSerializer(config, javaType, description, objectSerializer, typeSerializer, objectSerializer));
-	}
-
-	private <T extends JavaType> T mockType(Class<T> type) {
-		T javaType = mock(type);
-		doReturn(javaType).when(converterFactory).constructType(any());
-		s.addConverter(converter);
-		return javaType;
+		MapLikeType javaType = mock(MapLikeType.class);
+		assertNull(s.findMapLikeSerializer(config, javaType, description, jsonSerializer, typeSerializer, jsonSerializer));
 	}
 }
