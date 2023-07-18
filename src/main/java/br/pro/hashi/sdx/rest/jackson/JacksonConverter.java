@@ -34,7 +34,7 @@ public interface JacksonConverter<S, T> extends Converter<S, T> {
 	 * Classes are encouraged to provide an alternative implementation.
 	 * </p>
 	 * 
-	 * @param a {@link JavaType} representing {@code T}
+	 * @param targetType a {@link JavaType} representing {@code T}
 	 * @return the Jackson serializer
 	 */
 	default JsonSerializer<S> getJacksonSerializer(JavaType targetType) {
@@ -54,7 +54,7 @@ public interface JacksonConverter<S, T> extends Converter<S, T> {
 	 * Classes are encouraged to provide an alternative implementation.
 	 * </p>
 	 * 
-	 * @param a {@link JavaType} representing {@code T}
+	 * @param targetType a {@link JavaType} representing {@code T}
 	 * @return the Jackson deserializer
 	 */
 	default JsonDeserializer<S> getJacksonDeserializer(JavaType targetType) {

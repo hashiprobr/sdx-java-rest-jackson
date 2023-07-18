@@ -38,7 +38,9 @@ public class JacksonInjector extends Injector {
 	public static final String JSON_TYPE = "application/json";
 
 	/**
-	 * Obtains the injector instance.
+	 * Obtains an injector instance.
+	 * 
+	 * @return the instance
 	 */
 	public static JacksonInjector getInstance() {
 		return INSTANCE;
