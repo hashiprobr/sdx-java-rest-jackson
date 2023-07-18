@@ -1,16 +1,16 @@
 package br.pro.hashi.sdx.rest.jackson.mock;
 
 public class ObjectWithString {
-	private String field;
+	private String value;
 
-	public ObjectWithString() {
+	ObjectWithString() {
 	}
 
-	public ObjectWithString(String field) {
-		this.field = field;
+	public ObjectWithString(String value) {
+		this.value = value;
 	}
 
-	public String getField() {
-		return field;
+	public String getValue() {
+		return value;
 	}
 }

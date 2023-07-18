@@ -77,11 +77,9 @@ class JacksonSerializerTest {
 	}
 
 	private Throwable mockMapperThrow(Object body, Throwable cause) {
-		try {
+		assertDoesNotThrow(() -> {
 			doThrow(cause).when(converterMapper).writeValue(any(), eq(body), eq(Object.class));
-		} catch (IOException exception) {
-			throw new AssertionError(exception);
-		}
+		});
 		return cause;
 	}
 }

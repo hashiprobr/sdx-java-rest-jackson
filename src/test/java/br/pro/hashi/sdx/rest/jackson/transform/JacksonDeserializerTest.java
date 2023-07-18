@@ -1,5 +1,6 @@
 package br.pro.hashi.sdx.rest.jackson.transform;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
@@ -45,11 +46,9 @@ class JacksonDeserializerTest {
 
 	private Object mockMapperReturn(Reader reader) {
 		Object body = new Object();
-		try {
+		assertDoesNotThrow(() -> {
 			when(converterMapper.readValue(reader, Object.class)).thenReturn(body);
-		} catch (IOException exception) {
-			throw new AssertionError(exception);
-		}
+		});
 		return body;
 	}
 
@@ -76,11 +75,9 @@ class JacksonDeserializerTest {
 	}
 
 	private Throwable mockMapperThrow(Reader reader, Throwable cause) {
-		try {
+		assertDoesNotThrow(() -> {
 			when(converterMapper.readValue(reader, Object.class)).thenThrow(cause);
-		} catch (IOException exception) {
-			throw new AssertionError(exception);
-		}
+		});
 		return cause;
 	}
 

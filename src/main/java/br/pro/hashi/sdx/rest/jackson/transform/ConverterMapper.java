@@ -33,7 +33,7 @@ public class ConverterMapper {
 		}
 		if (body instanceof JsonParser) {
 			JsonParser parser = (JsonParser) body;
-			JsonGenerator generator = objectMapper.getFactory().createGenerator(writer);
+			JsonGenerator generator = createGenerator(writer);
 			JsonToken token;
 			while ((token = parser.nextToken()) != null) {
 				switch (token) {
@@ -75,15 +75,22 @@ public class ConverterMapper {
 				}
 			}
 			parser.close();
+			generator.flush();
 			return;
 		}
 		if (Types.instanceOfWriterConsumer(body, type)) {
 			@SuppressWarnings("unchecked")
 			Consumer<JsonGenerator> consumer = (Consumer<JsonGenerator>) body;
-			consumer.accept(objectMapper.getFactory().createGenerator(writer));
+			consumer.accept(createGenerator(writer));
 			return;
 		}
 		objectMapper.writerFor(converterFactory.constructType(type)).writeValue(writer, body);
+	}
+
+	private JsonGenerator createGenerator(Writer writer) throws IOException {
+		return objectMapper.getFactory()
+				.createGenerator(writer)
+				.useDefaultPrettyPrinter();
 	}
 
 	<T> T readValue(Reader reader, Type type) throws IOException {

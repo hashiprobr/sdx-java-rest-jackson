@@ -1,17 +1,16 @@
 package br.pro.hashi.sdx.rest.jackson.mock;
 
 public class ObjectWithTransient {
-	public transient boolean field;
+	private transient boolean value;
 
-	public ObjectWithTransient() {
-		this.field = false;
+	ObjectWithTransient() {
 	}
 
-	public boolean getField() {
-		return field;
+	public ObjectWithTransient(boolean value) {
+		this.value = value;
 	}
 
-	public void setField(boolean field) {
-		this.field = field;
+	public boolean isValue() {
+		return value;
 	}
 }

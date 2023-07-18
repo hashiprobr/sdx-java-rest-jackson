@@ -1,16 +1,16 @@
 package br.pro.hashi.sdx.rest.jackson.mock;
 
 public class ObjectWithDouble {
-	private double field;
+	private double value;
 
-	public ObjectWithDouble() {
+	ObjectWithDouble() {
 	}
 
-	public ObjectWithDouble(double field) {
-		this.field = field;
+	public ObjectWithDouble(double value) {
+		this.value = value;
 	}
 
-	public double getField() {
-		return field;
+	public double getValue() {
+		return value;
 	}
 }
