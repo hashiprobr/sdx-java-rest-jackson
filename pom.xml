@@ -86,7 +86,6 @@
         <version>3.1.2</version>
         <configuration>
           <argLine>
-            --add-opens br.pro.hashi.sdx.rest.jackson/br.pro.hashi.sdx.rest.jackson.mock=br.pro.hashi.sdx.rest
             --add-opens br.pro.hashi.sdx.rest.jackson/br.pro.hashi.sdx.rest.jackson.mock=com.fasterxml.jackson.databind
           </argLine>
         </configuration>
