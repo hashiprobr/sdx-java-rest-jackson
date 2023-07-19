@@ -32,7 +32,7 @@ public class JacksonRestClientBuilder extends RestClientBuilder {
 	 * See
 	 * {@link JacksonInjector#inject(br.pro.hashi.sdx.rest.Builder, ObjectMapper)}.
 	 * </p>
-	 * 
+	 *
 	 * @param objectMapper the object mapper
 	 * @throws NullPointerException if the object mapper is null
 	 */
@@ -49,7 +49,7 @@ public class JacksonRestClientBuilder extends RestClientBuilder {
 	 * <p>
 	 * See {@link JacksonInjector#inject(br.pro.hashi.sdx.rest.Builder, String)}.
 	 * </p>
-	 * 
+	 *
 	 * @param packageName the package name
 	 * @throws NullPointerException if the package name is null
 	 */
@@ -67,7 +67,7 @@ public class JacksonRestClientBuilder extends RestClientBuilder {
 	 * See
 	 * {@link JacksonInjector#inject(br.pro.hashi.sdx.rest.Builder, ObjectMapper, String)}.
 	 * </p>
-	 * 
+	 *
 	 * @param objectMapper the object mapper
 	 * @param packageName  the package name
 	 * @throws NullPointerException if the object mapper is null or package name is

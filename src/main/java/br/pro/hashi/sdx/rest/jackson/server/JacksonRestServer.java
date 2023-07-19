@@ -10,7 +10,7 @@ public final class JacksonRestServer {
 	/**
 	 * Builds a server with a default configuration from the resources in the
 	 * specified package.
-	 * 
+	 *
 	 * @param packageName the package name
 	 * @return the server
 	 * @throws NullPointerException if the package name is null

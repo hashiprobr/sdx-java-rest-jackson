@@ -21,7 +21,7 @@ import br.pro.hashi.sdx.rest.transform.extension.Converter;
  * The idea is that the source type is not supported by Jackson but the target
  * type is (possibly via other converters).
  * </p>
- * 
+ *
  * @param <S> the source type
  * @param <T> the target type
  */
@@ -33,7 +33,7 @@ public interface JacksonConverter<S, T> extends Converter<S, T> {
 	 * <p>
 	 * Classes are encouraged to provide an alternative implementation.
 	 * </p>
-	 * 
+	 *
 	 * @param targetType a {@link JavaType} representing {@code T}
 	 * @return the Jackson serializer
 	 */
@@ -53,7 +53,7 @@ public interface JacksonConverter<S, T> extends Converter<S, T> {
 	 * <p>
 	 * Classes are encouraged to provide an alternative implementation.
 	 * </p>
-	 * 
+	 *
 	 * @param targetType a {@link JavaType} representing {@code T}
 	 * @return the Jackson deserializer
 	 */

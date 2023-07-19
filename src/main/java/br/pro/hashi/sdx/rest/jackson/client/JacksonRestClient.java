@@ -12,7 +12,7 @@ public final class JacksonRestClient {
 	 * Builds a dynamic HTTP/2 and HTTP/1.1 client with a default configuration to
 	 * the specified URL prefix.
 	 * </p>
-	 * 
+	 *
 	 * @param urlPrefix the URL prefix
 	 * @return the client
 	 * @throws NullPointerException     if the URL prefix is null

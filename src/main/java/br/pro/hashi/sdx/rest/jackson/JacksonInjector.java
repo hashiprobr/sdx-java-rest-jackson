@@ -39,7 +39,7 @@ public class JacksonInjector extends Injector {
 
 	/**
 	 * Obtains an injector instance.
-	 * 
+	 *
 	 * @return the instance
 	 */
 	public static JacksonInjector getInstance() {
@@ -61,7 +61,7 @@ public class JacksonInjector extends Injector {
 	 * This method uses an {@link ObjectMapper} with a default configuration.
 	 * Namely, with the options below.
 	 * </p>
-	 * 
+	 *
 	 * <pre>
 	 * {@code   .enable(SerializationFeature.INDENT_OUTPUT)
 	 *   .enable(JsonReadFeature.ALLOW_NON_NUMERIC_NUMBERS.mappedFeature())
@@ -71,7 +71,7 @@ public class JacksonInjector extends Injector {
 	 *   .setVisibility(PropertyAccessor.ALL, Visibility.NONE)
 	 *   .setVisibility(PropertyAccessor.FIELD, Visibility.ANY)}
 	 * </pre>
-	 * 
+	 *
 	 * @param builder the client or server builder
 	 * @throws NullPointerException if the client or server builder is null
 	 */
@@ -87,7 +87,7 @@ public class JacksonInjector extends Injector {
 	 * <p>
 	 * This method uses the specified {@link ObjectMapper}.
 	 * </p>
-	 * 
+	 *
 	 * @param builder      the client or server builder
 	 * @param objectMapper the object mapper
 	 * @throws NullPointerException if the client or server builder is null or the
@@ -108,7 +108,7 @@ public class JacksonInjector extends Injector {
 	 * all concrete implementations of {@link JacksonConverter} in the specified
 	 * package (including subpackages).
 	 * </p>
-	 * 
+	 *
 	 * @param builder     the client or server builder
 	 * @param packageName the package name
 	 * @throws NullPointerException if the client or server builder is null or the
@@ -127,7 +127,7 @@ public class JacksonInjector extends Injector {
 	 * This method uses the specified {@link ObjectMapper} and extends its type
 	 * support (see {@code inject(Builder<?>, String)}).
 	 * </p>
-	 * 
+	 *
 	 * @param builder      the client or server builder
 	 * @param objectMapper the object mapper
 	 * @param packageName  the package name
